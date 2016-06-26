@@ -366,7 +366,7 @@ def instantiate_post(valid_classes, post_string):
     site_identifier, post_id = matches.groups()
 
     for cls in valid_classes:
-        if site_identifier in (cls.short_code, cls.domain):
+        if site_identifier.lower() in (cls.short_code, cls.domain):
             return cls(post_id)
 
     # TODO: This should probably be a custom exception
