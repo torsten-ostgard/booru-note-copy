@@ -278,15 +278,13 @@ class GelbooruPost(BooruPost):
         return notes
 
     def write_note(self, note):
-        params = {
-            'id': -1, 'note[x]': note.x, 'note[y]': note.y,
+        data = {
+            'note[html_id]': 'x', 'note[x]': note.x, 'note[y]': note.y,
             'note[width]': note.width, 'note[height]': note.height,
             'note[body]': quote(note.body), 'note[post_id]': self.post_id
         }
-        param_list = ['{0}={1}'.format(k, v) for k, v in params.items()]
-        param_string = '&'.join(param_list)
-        url = 'http://gelbooru.com/public/note_save.php?{0}'.format(param_string)
-        requests.post(url, data='', cookies=self.auth)
+        url = self.base_url + '/public/note_save.php?id=-2'
+        requests.post(url, data=data, cookies=self.auth)
 
     def update_tags(self):
         rating = self.post_info.get('rating')
