@@ -230,7 +230,7 @@ class GelbooruPost(BooruPost):
     site_name = 'Gelbooru'
     short_code = 'g'
     domain = 'gelbooru.com'
-    base_url = 'http://' + domain
+    base_url = 'https://' + domain
     login_url = base_url + '/index.php?page=account&s=login&code=00'
     # Not all API calls support JSON and those that do are often incomplete, so just use XML
     post_url = base_url + '/index.php?page=dapi&s=post&q=index&id={post_id}'
@@ -302,11 +302,8 @@ class GelbooruPost(BooruPost):
             'rating': rating, 'title': title, 'source': source, 'tags': tag_string,
             'id': self.post_id, 'pconf': pconf, 'lupdated': lupdated, 'submit': submit
         }
-        requests.post(
-            'http://gelbooru.com/public/edit_post.php',
-            data=payload,
-            cookies=self.auth
-        )
+        url = self.base_url + '/public/edit_post.php'
+        requests.post(url, data=payload, cookies=self.auth)
 
 
 def get_valid_classes():
