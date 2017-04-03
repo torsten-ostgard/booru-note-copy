@@ -17,8 +17,7 @@ The lower-case prefixes are called short codes and - along with the domain name,
 
 
 ## Requirements
-- Python 3.4+
-- [requests][requests]
+- Python 2.7 or 3.2+
 
 
 ## Usage
@@ -43,5 +42,3 @@ You need to provide either a source and a destination post or a file; you cannot
 | Gelbooru        | `g`          | `gelbooru.com`       |
 
 
-
-  [requests]: http://docs.python-requests.org/en/master/

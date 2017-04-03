@@ -1,3 +1,4 @@
+from __future__ import print_function
 import argparse
 import getpass
 import inspect
@@ -7,11 +8,13 @@ import re
 import sys
 import time
 import xml.etree.ElementTree as ET
-from abc import ABC
+from abc import ABCMeta
 from abc import abstractmethod
-from urllib.parse import quote
+from builtins import input
 
 import requests
+from future.moves.urllib.parse import quote
+from future.utils import with_metaclass
 
 TAGS_TO_REMOVE = [
     'translation_request',
@@ -43,7 +46,7 @@ class Note(object):
         )
 
 
-class BooruPost(ABC):
+class BooruPost(with_metaclass(ABCMeta)):
     """
     A post on a booru-style imageboard.
     """
