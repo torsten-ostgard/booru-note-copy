@@ -1,17 +1,18 @@
 from __future__ import print_function
+
 import argparse
 import getpass
 import inspect
-import os.path
+import os
 import pickle
 import re
 import sys
 import time
-import defusedxml.ElementTree as ET
 from abc import ABCMeta
 from abc import abstractmethod
 from builtins import input
 
+import defusedxml.ElementTree as ET
 import requests
 from future.moves.urllib.parse import quote
 from future.utils import with_metaclass
@@ -42,7 +43,7 @@ class Note(object):
             height=self.height,
             x=self.x,
             y=self.y,
-            body=body
+            body=body,
         )
 
 
@@ -173,7 +174,7 @@ class BooruPost(with_metaclass(ABCMeta)):
             src_site=source_post.site_name,
             src_id=source_post.post_id,
             dest_site=self.site_name,
-            dest_id=self.post_id
+            dest_id=self.post_id,
         ))
 
 
@@ -196,7 +197,13 @@ class DanbooruPost(BooruPost):
         api_notes = r.json()
 
         for note in api_notes:
-            notes.append(Note(note['x'], note['y'], note['width'], note['height'], note['body']))
+            notes.append(Note(
+                note['x'],
+                note['y'],
+                note['width'],
+                note['height'],
+                note['body'],
+            ))
 
         return notes
 
@@ -219,7 +226,7 @@ class DanbooruPost(BooruPost):
             'note[y]': note.y,
             'note[width]': note.width,
             'note[height]': note.height,
-            'note[body]': note.body
+            'note[body]': note.body,
         }
         requests.post(self.note_url, data=payload, params=self.auth)
 
@@ -275,19 +282,23 @@ class GelbooruPost(BooruPost):
                 note.get('y'),
                 note.get('width'),
                 note.get('height'),
-                body
+                body,
             ))
 
         return notes
 
     def write_note(self, note):
-        data = {
-            'note[html_id]': 'x', 'note[x]': note.x, 'note[y]': note.y,
-            'note[width]': note.width, 'note[height]': note.height,
-            'note[body]': quote(note.body), 'note[post_id]': self.post_id
+        payload = {
+            'note[html_id]': 'x',
+            'note[x]': note.x,
+            'note[y]': note.y,
+            'note[width]': note.width,
+            'note[height]': note.height,
+            'note[body]': quote(note.body),
+            'note[post_id]': self.post_id,
         }
         url = self.base_url + '/public/note_save.php?id=-2'
-        requests.post(url, data=data, cookies=self.auth)
+        requests.post(url, data=payload, cookies=self.auth)
 
     def update_tags(self):
         rating = self.post_info.get('rating')
@@ -302,8 +313,14 @@ class GelbooruPost(BooruPost):
         submit = 'Save changes'
 
         payload = {
-            'rating': rating, 'title': title, 'source': source, 'tags': tag_string,
-            'id': self.post_id, 'pconf': pconf, 'lupdated': lupdated, 'submit': submit
+            'rating': rating,
+            'title': title,
+            'source': source,
+            'tags': tag_string,
+            'id': self.post_id,
+            'pconf': pconf,
+            'lupdated': lupdated,
+            'submit': submit,
         }
         url = self.base_url + '/public/edit_post.php'
         requests.post(url, data=payload, cookies=self.auth)
@@ -428,8 +445,7 @@ def main():
                 if not line:
                     continue
 
-                source_id = line.split()[0]
-                destination_id = line.split()[1]
+                source_id, destination_id = line.split()
                 copy_notes(valid_classes, source_id, destination_id)
                 time.sleep(cooldown)
     elif args.source or args.destination:
