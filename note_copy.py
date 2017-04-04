@@ -7,7 +7,7 @@ import pickle
 import re
 import sys
 import time
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from abc import ABCMeta
 from abc import abstractmethod
 from builtins import input
