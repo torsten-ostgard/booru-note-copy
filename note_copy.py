@@ -197,13 +197,14 @@ class DanbooruPost(BooruPost):
         api_notes = r.json()
 
         for note in api_notes:
-            notes.append(Note(
-                note['x'],
-                note['y'],
-                note['width'],
-                note['height'],
-                note['body'],
-            ))
+            if note['is_active']:
+                notes.append(Note(
+                    note['x'],
+                    note['y'],
+                    note['width'],
+                    note['height'],
+                    note['body'],
+                ))
 
         return notes
 
