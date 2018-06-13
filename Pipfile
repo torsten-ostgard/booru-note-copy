@@ -9,5 +9,5 @@ flake8 = "*"
 
 [packages]
 defusedxml = "*"
-future="*"
 requests = "*"
+six = "*"

@@ -10,12 +10,12 @@ import sys
 import time
 from abc import ABCMeta
 from abc import abstractmethod
-from builtins import input
 
 import defusedxml.ElementTree as ET
 import requests
-from future.moves.urllib.parse import quote
-from future.utils import with_metaclass
+from six import add_metaclass
+from six.moves import input
+from six.moves.urllib.parse import quote
 
 from .utils import yes_no
 
@@ -49,7 +49,8 @@ class Note(object):
         )
 
 
-class BooruPost(with_metaclass(ABCMeta)):
+@add_metaclass(ABCMeta)
+class BooruPost(object):
     """
     A post on a booru-style imageboard.
     """
