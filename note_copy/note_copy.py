@@ -38,6 +38,9 @@ class Note(object):
         self.height = int(height)
         self.body = body
 
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
     def __str__(self):
         body = (self.body if len(self.body) < 30 else self.body[0:27] + '...')
         return "{width}x{height} {x},{y} {body}".format(
