@@ -12,6 +12,7 @@ from abc import abstractmethod
 
 import defusedxml.ElementTree as ET
 import requests
+from cached_property import cached_property
 from six import add_metaclass
 from six.moves import input
 from six.moves.urllib.parse import quote
@@ -56,14 +57,12 @@ class BooruPost(object):
     def __init__(self, post_id):
         self.post_id = post_id
         self.post_url = self.post_url.format(post_id=post_id)
-        self.auth = self.get_auth()
-        self.post_info = self.get_post_info()
-        self.notes = self.get_notes()
 
     def __str__(self):
         return '{0} Post - {1}'.format(self.site_name, self.post_id)
 
-    def get_auth(self):
+    @cached_property
+    def auth(self):
         """
         Return the information necessary to use the site as a registered user.
 
@@ -97,7 +96,7 @@ class BooruPost(object):
         return auth
 
     @abstractmethod
-    def get_notes(self):
+    def notes(self):
         """
         :return: all current notes attached to a post
         :rtype: list[Note]
@@ -105,7 +104,7 @@ class BooruPost(object):
         raise NotImplementedError
 
     @abstractmethod
-    def get_post_info(self):
+    def post_info(self):
         raise NotImplementedError
 
     @property
@@ -191,7 +190,8 @@ class DanbooruPost(BooruPost):
     uses_cookies = False
     cooldown = 1
 
-    def get_notes(self):
+    @cached_property
+    def notes(self):
         notes = []
         params = {'group_by': 'note', 'search[post_id]': self.post_id}
         params.update(self.auth)
@@ -210,7 +210,8 @@ class DanbooruPost(BooruPost):
 
         return notes
 
-    def get_post_info(self):
+    @cached_property
+    def post_info(self):
         """
         :return: a dictionary of post metadata
         :rtype: dict[str, str]
@@ -258,7 +259,8 @@ class GelbooruPost(BooruPost):
         session.post(self.login_url, data=payload)
         return session
 
-    def get_post_info(self):
+    @cached_property
+    def post_info(self):
         """
         :return: the XML tree of post metadata
         :rtype: xml.etree.ElementTree.Element
@@ -271,7 +273,8 @@ class GelbooruPost(BooruPost):
     def dimensions(self):
         return int(self.post_info.get('height')), int(self.post_info.get('width'))
 
-    def get_notes(self):
+    @cached_property
+    def notes(self):
         self.note_url = self.note_url.format(post_id=self.post_id)
         notes = []
         r = requests.get(self.note_url, cookies=self.auth)
