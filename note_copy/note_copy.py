@@ -181,6 +181,10 @@ class BooruPost(object):
             dest_id=self.post_id,
         ))
 
+        # Invalidate cached properties
+        del self.__dict__['post_info']
+        del self.__dict__['notes']
+
 
 class DanbooruPost(BooruPost):
     site_name = 'Danbooru'
