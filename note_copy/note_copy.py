@@ -18,6 +18,7 @@ from six.moves import input
 from six.moves.urllib.parse import quote
 
 from .utils import yes_no
+from .utils import convert_xml_to_dict
 
 TAGS_TO_REMOVE = [
     'translation_request',
@@ -269,16 +270,17 @@ class GelbooruPost(BooruPost):
     @cached_property
     def post_info(self):
         """
-        :return: the XML tree of post metadata
-        :rtype: xml.etree.ElementTree.Element
+        :return: a dictionary of post metadata
+        :rtype: dict[str, str|int]
         """
         r = requests.get(self.post_url, cookies=self.auth)
         root = ET.fromstring(r.text)
-        return root.find('post')
+        d = convert_xml_to_dict(root)
+        return d['posts'][0]
 
     @property
     def dimensions(self):
-        return int(self.post_info.get('height')), int(self.post_info.get('width'))
+        return self.post_info['height'], self.post_info['width']
 
     @cached_property
     def notes(self):
@@ -286,15 +288,16 @@ class GelbooruPost(BooruPost):
         notes = []
         r = requests.get(self.note_url, cookies=self.auth)
         root = ET.fromstring(r.text)
-        api_notes = root.findall('note')
+        d = convert_xml_to_dict(root)
+        api_notes = d['notes']
 
         for note in api_notes:
-            body = note.get('body').replace('<br />', '\n')
+            body = note['body'].replace('<br />', '\n')
             notes.append(Note(
-                note.get('x'),
-                note.get('y'),
-                note.get('width'),
-                note.get('height'),
+                note['x'],
+                note['y'],
+                note['width'],
+                note['height'],
                 body,
             ))
 
@@ -314,15 +317,13 @@ class GelbooruPost(BooruPost):
         requests.post(url, data=payload, cookies=self.auth)
 
     def update_tags(self):
-        rating = self.post_info.get('rating')
-        title = self.post_info.get('title')
-        # If there is no title, get() returns None, which is an invalid value for Gelbooru, so make
-        # the title an empty string
-        title = (title if title else '')
-        source = self.post_info.get('source')
-        tag_string = change_tags(self.post_info.get('tags'))
+        rating = self.post_info['rating']
+        # None is an invalid value for Gelbooru, so make the title an empty string if not found
+        title = self.post_info.get('title', '')
+        source = self.post_info['source']
+        tag_string = change_tags(self.post_info['tags'])
         pconf = '1'
-        lupdated = self.post_info.get('change')
+        lupdated = self.post_info['change']
         submit = 'Save changes'
 
         payload = {
