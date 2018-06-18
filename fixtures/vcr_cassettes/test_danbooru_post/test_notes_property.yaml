@@ -1,0 +1,41 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.19.0]
+    method: GET
+    uri: https://danbooru.donmai.us/notes.json?group_by=note&login=fake_user_for_note_copy_tests&search%5Bpost_id%5D=1437880&api_key=FAKE_API_KEY_FOR_NOTE_COPY_TESTS
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA62R0UrDMBSGX0XOdTpOTrM1zROot9suRKUcm2ADazvadHOI727imIogTtjdSfjz
+        /Ycv96/gLZgSSVIuoB4cB2crDmCAUOYZLjLUK5ImL01ezKSiDJVBBAHT1p4f/iD3Q5XaZEFSKQEv
+        cdSFgAMYXZQC9t6GBoxCAY3zz03klnMBfqy4Dn7nwIRhcgK2/RiOIJUXWsf4U28jBFbp0Rjbdm4Y
+        fd/FxGnNY3M3bTZfu3TcRiYs07n13S237Gvu7lzw8Ca+maG/zBDOUJ5r5kf4FzOU/uOQrj7FUJpP
+        Zub/MnPtBx55z1frhwmRFjeXkfT4Di7x0cVAAgAA
+    headers:
+      Access-Control-Allow-Origin: ['*']
+      CF-RAY: [42a2757d7bf05576-ORD]
+      Cache-Control: ['max-age=0, private, must-revalidate']
+      Connection: [keep-alive]
+      Content-Encoding: [gzip]
+      Content-Type: [application/json; charset=utf-8]
+      Date: ['Wed, 13 Jun 2018 06:21:46 GMT']
+      ETag: [W/"293b36f3bd81086a6ae9728d86d6e0b4"]
+      Expect-CT: ['max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"']
+      Referrer-Policy: [strict-origin-when-cross-origin]
+      Server: [cloudflare]
+      Strict-Transport-Security: [max-age=31556952; preload]
+      Vary: [Accept-Encoding]
+      X-Content-Type-Options: [nosniff]
+      X-Download-Options: [noopen]
+      X-Frame-Options: [SAMEORIGIN]
+      X-Permitted-Cross-Domain-Policies: [none]
+      X-Request-Id: [8842dfb2-18bb-46d0-93ff-9dfd0d648925]
+      X-Runtime: ['0.022620']
+      X-XSS-Protection: [1; mode=block]
+    status: {code: 200, message: OK}
+version: 1

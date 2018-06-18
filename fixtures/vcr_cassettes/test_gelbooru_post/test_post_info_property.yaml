@@ -1,0 +1,34 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.19.0]
+    method: GET
+    uri: https://gelbooru.com/index.php?page=dapi&s=post&q=index&id=1904252
+  response:
+    body: {string: '<?xml version="1.0" encoding="UTF-8"?><posts count="1" offset="0"><post
+        height="1192" score="7" file_url="https://simg3.gelbooru.com/images/24/fb/24fb40064d89da2c9549cd4f3bc2bc77.jpg"
+        parent_id="" sample_url="https://simg3.gelbooru.com/samples/24/fb/sample_24fb40064d89da2c9549cd4f3bc2bc77.jpg"  sample_width="850"
+        sample_height="952" preview_url="https://simg3.gelbooru.com/thumbnails/24/fb/thumbnail_24fb40064d89da2c9549cd4f3bc2bc77.jpg"
+        rating="s" tags=" 2girls black_legwear blush bow brown_eyes brown_hair cosplay
+        directional_arrow dress female hair_ornament hair_tie hirasawa_ui hirasawa_yui
+        iena k-on! kneehighs madobe_ai madobe_ai_(cosplay) madobe_yuu madobe_yuu_(cosplay)
+        microsoft multiple_girls pantyhose ponytail pun short_hair simple_background
+        tablet translated white_background white_legwear windows windows_8 " id="1904252"
+        width="1064"  change="1430711043" md5="24fb40064d89da2c9549cd4f3bc2bc77" creator_id="6498"
+        has_children="false" created_at="Sat Jun 08 20:46:12 -0500 2013" status="active"
+        source="http://www.pixiv.net/member_illust.php?mode=medium&amp;illust_id=35974290"
+        has_notes="true" has_comments="false" preview_width="133" preview_height="150"/>
+
+        </posts>'}
+    headers:
+      Connection: [keep-alive]
+      Content-Type: [text/xml;charset=UTF-8]
+      Date: ['Fri, 15 Jun 2018 20:20:40 GMT']
+      Server: [nginx/1.12.2]
+      Strict-Transport-Security: [max-age=3600;]
+    status: {code: 200, message: OK}
+version: 1
