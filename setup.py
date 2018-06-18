@@ -20,7 +20,7 @@ setuptools.setup(
     install_requires=requires,
     entry_points={
         'console_scripts': [
-            'note_copy = note_copy.note_copy:main',
+            'note_copy = note_copy.cli:main',
         ],
     },
     classifiers=[

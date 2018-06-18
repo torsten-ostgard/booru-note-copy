@@ -1,6 +1,5 @@
 from __future__ import print_function
 
-import argparse
 import getpass
 import inspect
 import os
@@ -406,41 +405,3 @@ def change_tags(tag_string):
 
     tag_string += ' translated'
     return tag_string
-
-
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-s', '--source', action='store', type=str,
-                        help='The post from which notes will be copied')
-    parser.add_argument('-d', '--destination', action='store', type=str,
-                        help='The post to which notes will be copied')
-    parser.add_argument('-f', '--file', action='store', type=str,
-                        help='File containing post pairs, separated by whitespace, one per line')
-    args = parser.parse_args()
-    valid_classes = get_valid_classes()
-
-    if args.source and args.destination:
-        copy_notes(valid_classes, args.source, args.destination)
-    elif args.file:
-        cooldown = max(cls.cooldown for cls in valid_classes)
-        with open(args.file, 'r') as f:
-            for line in f:
-                line = line.strip()
-
-                # Ignore blank lines
-                if not line:
-                    continue
-
-                source_id, destination_id = line.split()
-                copy_notes(valid_classes, source_id, destination_id)
-                time.sleep(cooldown)
-    elif args.source or args.destination:
-        print('Specify two post numbers', file=sys.stderr)
-        sys.exit(1)
-    else:
-        print('No post numbers or file specified', file=sys.stderr)
-        sys.exit(1)
-
-
-if __name__ == '__main__':
-    main()
