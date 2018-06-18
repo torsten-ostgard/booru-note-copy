@@ -17,6 +17,8 @@ from six import add_metaclass
 from six.moves import input
 from six.moves.urllib.parse import quote
 
+from .exceptions import NoSupportedSites
+from .exceptions import UnsupportedSite
 from .utils import yes_no
 from .utils import convert_xml_to_dict
 
@@ -394,15 +396,17 @@ def instantiate_post(valid_classes, post_string):
     :return: an object representing the given post
     :rtype: BooruPost
     """
+    if not valid_classes:
+        raise NoSupportedSites()
+
     matches = re.search(POST_PATTERN, post_string)
     site_identifier, post_id = matches.groups()
 
     for cls in valid_classes:
-        if site_identifier.lower() in (cls.short_code, cls.domain):
+        if site_identifier.lower() in {cls.short_code, cls.domain}:
             return cls(post_id)
 
-    # TODO: This should probably be a custom exception
-    raise Exception('No supported site found for identifier: ' + site_identifier)
+    raise UnsupportedSite('No supported site found for identifier: ' + site_identifier)
 
 
 def change_tags(tag_string):

@@ -3,6 +3,7 @@ from unittest import mock
 
 import vcr
 
+from note_copy import exceptions
 from note_copy import note_copy
 
 DANBOORU_TEST_AUTH = {
@@ -133,6 +134,32 @@ class TestGetValidClasses(TestCase):
         result = note_copy.get_valid_classes()
         self.assertEqual(expected_result, set(result))
         self.assertEqual(len(expected_result), len(result))
+
+
+class TestInstantiatePost(TestCase):
+    def setUp(self):
+        self.valid_classes = {
+            note_copy.DanbooruPost,
+            note_copy.GelbooruPost,
+        }
+
+    def test_no_sites(self):
+        with self.assertRaises(exceptions.NoSupportedSites):
+            note_copy.instantiate_post([], 'd1437880')
+
+    def test_unsupported_site(self):
+        with self.assertRaises(exceptions.UnsupportedSite):
+            note_copy.instantiate_post(self.valid_classes, 'example.com1437880')
+
+    def test_short_code(self):
+        expected_result = note_copy.DanbooruPost(1437880)
+        result = note_copy.instantiate_post(self.valid_classes, 'd1437880')
+        self.assertEqual(expected_result, result)
+
+    def test_domain(self):
+        expected_result = note_copy.DanbooruPost(1437880)
+        result = note_copy.instantiate_post(self.valid_classes, 'danbooru.donmai.us1437880')
+        self.assertEqual(expected_result, result)
 
 
 class TestChangeTags(TestCase):
