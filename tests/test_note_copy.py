@@ -42,6 +42,20 @@ class TestNote(TestCase):
         self.assertEqual(expected_result, result)
 
 
+class TestBooruPost(TestCase):
+    def test_equality_does_match(self):
+        danbooru_post_1 = note_copy.DanbooruPost(1234)
+        # Simulate note being fetched
+        danbooru_post_1.notes = [note_copy.Note(1, 2, 3, 4, 'test')]
+        danbooru_post_2 = note_copy.DanbooruPost('1234')
+        self.assertEqual(danbooru_post_1, danbooru_post_2)
+
+    def test_equality_does_not_match(self):
+        danbooru_post = note_copy.DanbooruPost(1234)
+        gelbooru_post = note_copy.GelbooruPost(1234)
+        self.assertNotEqual(danbooru_post, gelbooru_post)
+
+
 class TestDanbooruPost(TestCase):
     def setUp(self):
         self.post = note_copy.DanbooruPost(1437880)

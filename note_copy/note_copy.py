@@ -59,8 +59,11 @@ class BooruPost(object):
     A post on a booru-style imageboard.
     """
     def __init__(self, post_id):
-        self.post_id = post_id
+        self.post_id = int(post_id)
         self.post_url = self.post_url.format(post_id=post_id)
+
+    def __eq__(self, other):
+        return self.domain == other.domain and self.post_id == other.post_id
 
     def __str__(self):
         return '{0} Post - {1}'.format(self.site_name, self.post_id)
