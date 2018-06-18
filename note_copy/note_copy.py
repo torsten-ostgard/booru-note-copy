@@ -1,6 +1,5 @@
 from __future__ import print_function
 
-import argparse
 import getpass
 import inspect
 import os
@@ -10,12 +9,14 @@ import sys
 import time
 from abc import ABCMeta
 from abc import abstractmethod
-from builtins import input
 
 import defusedxml.ElementTree as ET
 import requests
-from future.moves.urllib.parse import quote
-from future.utils import with_metaclass
+from six import add_metaclass
+from six.moves import input
+from six.moves.urllib.parse import quote
+
+from .utils import yes_no
 
 TAGS_TO_REMOVE = [
     'translation_request',
@@ -47,7 +48,8 @@ class Note(object):
         )
 
 
-class BooruPost(with_metaclass(ABCMeta)):
+@add_metaclass(ABCMeta)
+class BooruPost(object):
     """
     A post on a booru-style imageboard.
     """
@@ -403,59 +405,3 @@ def change_tags(tag_string):
 
     tag_string += ' translated'
     return tag_string
-
-
-def yes_no(prompt):
-    """
-    Prompt the user with a yes/no question until an answer is received
-
-    :param prompt: the message to display
-    :type prompt: str
-    :return: whether the user answered yes or no
-    :rtype: bool
-    """
-    while True:
-        resp = input('{0} (Y/N) '.format(prompt.strip())).lower().strip()
-
-        if resp == 'y' or resp == 'yes':
-            return True
-        elif resp == 'n' or resp == 'no':
-            return False
-
-
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-s', '--source', action='store', type=str,
-                        help='The post from which notes will be copied')
-    parser.add_argument('-d', '--destination', action='store', type=str,
-                        help='The post to which notes will be copied')
-    parser.add_argument('-f', '--file', action='store', type=str,
-                        help='File containing post pairs, separated by whitespace, one per line')
-    args = parser.parse_args()
-    valid_classes = get_valid_classes()
-
-    if args.source and args.destination:
-        copy_notes(valid_classes, args.source, args.destination)
-    elif args.file:
-        cooldown = max(cls.cooldown for cls in valid_classes)
-        with open(args.file, 'r') as f:
-            for line in f:
-                line = line.strip()
-
-                # Ignore blank lines
-                if not line:
-                    continue
-
-                source_id, destination_id = line.split()
-                copy_notes(valid_classes, source_id, destination_id)
-                time.sleep(cooldown)
-    elif args.source or args.destination:
-        print('Specify two post numbers', file=sys.stderr)
-        sys.exit(1)
-    else:
-        print('No post numbers or file specified', file=sys.stderr)
-        sys.exit(1)
-
-
-if __name__ == '__main__':
-    main()
