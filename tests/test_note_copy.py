@@ -132,8 +132,7 @@ class TestGetValidClasses(TestCase):
             note_copy.GelbooruPost,
         }
         result = note_copy.get_valid_classes()
-        self.assertEqual(expected_result, set(result))
-        self.assertEqual(len(expected_result), len(result))
+        self.assertEqual(expected_result, result)
 
 
 class TestInstantiatePost(TestCase):

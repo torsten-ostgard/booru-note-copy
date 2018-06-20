@@ -347,18 +347,18 @@ class GelbooruPost(BooruPost):
 
 def get_valid_classes():
     """
-    :return: a list of classes representing the sites supported by this script
-    :rtype: list[BooruPost]
+    :return: a set of classes representing the sites supported by this script
+    :rtype: set[BooruPost]
     """
     classes = [cls[1] for cls in inspect.getmembers(sys.modules[__name__], inspect.isclass)]
-    valid_classes = []
+    valid_classes = set()
 
     for cls in classes:
         if issubclass(cls, BooruPost):
             try:
                 # Ensure that only implemented classes get returned
                 cls.domain
-                valid_classes.append(cls)
+                valid_classes.add(cls)
             except AttributeError:
                 continue
 
@@ -370,7 +370,7 @@ def copy_notes(valid_classes, source_id, destination_id):
     Copy notes from the source post to the destrination post
 
     :param valid_classes: classes representing the supported sites
-    :type valid_classes: list of BooruPost classes
+    :type valid_classes: set[BooruPost]
     :param source_id: the site code and post number of the source post
     :type source_id: str
     :param destination_id: the site code and post number of the destination post
