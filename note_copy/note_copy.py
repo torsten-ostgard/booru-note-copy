@@ -125,24 +125,6 @@ class BooruPost(object):
         """
         raise NotImplementedError
 
-    def scale_note(self, source_note, source_post):
-        """
-        Transforms a note to be proportional to the destination image.
-
-        :return: a new note
-        :rtype: Note
-        """
-        image_width, image_height = self.dimensions
-        source_image_width, source_image_height = source_post.dimensions
-        x_ratio = image_width / source_image_width
-        y_ratio = image_height / source_image_height
-        scaled_width = source_note.width * x_ratio
-        scaled_height = source_note.height * y_ratio
-        scaled_x = source_note.x * x_ratio
-        scaled_y = source_note.y * y_ratio
-
-        return Note(scaled_x, scaled_y, scaled_width, scaled_height, source_note.body)
-
     @abstractmethod
     def write_note(self, note):
         """
@@ -173,7 +155,7 @@ class BooruPost(object):
         """
         for note in source_post.notes:
             if not same_size:
-                note = self.scale_note(note, source_post)
+                note = scale_note(note, source_post.dimensions, self.dimensions)
 
             self.write_note(note)
             time.sleep(self.cooldown)
@@ -407,6 +389,25 @@ def instantiate_post(valid_classes, post_string):
             return cls(post_id)
 
     raise UnsupportedSite('No supported site found for identifier: ' + site_identifier)
+
+
+def scale_note(source_note, source_dimensions, destination_dimensions):
+    """
+    Transforms a note to be proportional to the destination image.
+
+    :return: a new note
+    :rtype: Note
+    """
+    image_width, image_height = destination_dimensions
+    source_image_width, source_image_height = source_dimensions
+    x_ratio = image_width / source_image_width
+    y_ratio = image_height / source_image_height
+    scaled_width = source_note.width * x_ratio
+    scaled_height = source_note.height * y_ratio
+    scaled_x = source_note.x * x_ratio
+    scaled_y = source_note.y * y_ratio
+
+    return Note(scaled_x, scaled_y, scaled_width, scaled_height, source_note.body)
 
 
 def change_tags(tag_string):

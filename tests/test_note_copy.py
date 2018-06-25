@@ -43,6 +43,16 @@ class TestNote(TestCase):
         self.assertEqual(expected_result, result)
 
 
+class TestScaleNote(TestCase):
+    def test_scale_note(self):
+        note = note_copy.Note(1, 2, 30, 40, 'test')
+        source_dimensions = (100, 200)
+        destination_dimensions = (300, 400)
+        result = note_copy.scale_note(note, source_dimensions, destination_dimensions)
+        expected_result = note_copy.Note(3, 4, 90, 80, 'test')
+        self.assertEqual(expected_result, result)
+
+
 class TestBooruPost(TestCase):
     def test_equality_does_match(self):
         danbooru_post_1 = note_copy.DanbooruPost(1234)
