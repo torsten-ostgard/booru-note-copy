@@ -3,9 +3,16 @@ import setuptools
 import note_copy
 
 requires = [
+    'cached_property',
     'defusedxml',
     'requests',
     'six',
+]
+tests_require = [
+    'coverage',
+    'flake8',
+    'tox',
+    'vcrpy',
 ]
 
 setuptools.setup(
@@ -37,4 +44,6 @@ setuptools.setup(
         'Operating System :: OS Independent',
         'Topic :: Internet',
     ],
+    test_suite='tests',
+    tests_require=tests_require,
 )
