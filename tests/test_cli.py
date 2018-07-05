@@ -28,7 +28,7 @@ class TestMain(TestCase):
         mock_copy_notes.assert_has_calls([c])
 
     @mock.patch('note_copy.cli.time')
-    @mock.patch('note_copy.cli.open')
+    @mock.patch('builtins.open')
     @mock.patch('note_copy.cli.note_copy.copy_notes')
     def test_file(self, mock_copy_notes, mock_open, mock_time):
         # TODO: Get more interesting post numbers for the second set
