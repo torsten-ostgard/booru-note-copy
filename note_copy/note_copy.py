@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import getpass
 import inspect
 import os
@@ -9,13 +7,11 @@ import sys
 import time
 from abc import ABCMeta
 from abc import abstractmethod
+from urllib.parse import quote
 
 import defusedxml.ElementTree as ET
 import requests
 from cached_property import cached_property
-from six import add_metaclass
-from six.moves import input
-from six.moves.urllib.parse import quote
 
 from .exceptions import NoSupportedSites
 from .exceptions import UnsupportedSite
@@ -30,7 +26,7 @@ TAGS_TO_REMOVE = [
 POST_PATTERN = re.compile(r'(\D+?)(\d+)')
 
 
-class Note(object):
+class Note:
     """
     A translation note on an image.
     """
@@ -55,8 +51,7 @@ class Note(object):
         )
 
 
-@add_metaclass(ABCMeta)
-class BooruPost(object):
+class BooruPost(metaclass=ABCMeta):
     """
     A post on a booru-style imageboard.
     """

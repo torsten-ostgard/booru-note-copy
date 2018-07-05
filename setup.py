@@ -6,7 +6,6 @@ requires = [
     'cached_property',
     'defusedxml',
     'requests',
-    'six',
 ]
 tests_require = [
     'coverage',

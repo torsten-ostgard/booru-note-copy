@@ -1,8 +1,7 @@
 import sys
+from io import StringIO
 from unittest import TestCase
 from unittest import mock
-
-from six import StringIO
 
 from note_copy import note_copy
 from note_copy.cli import main
