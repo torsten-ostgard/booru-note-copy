@@ -1,12 +1,13 @@
-import getpass
 import inspect
+import json
 import os
-import pickle
 import re
 import sys
 import time
 from abc import ABCMeta
 from abc import abstractmethod
+from getpass import getpass
+from pathlib import Path
 from urllib.parse import quote
 
 import defusedxml.ElementTree as ET
@@ -55,9 +56,10 @@ class BooruPost(metaclass=ABCMeta):
     """
     A post on a booru-style imageboard.
     """
-    def __init__(self, post_id):
+    def __init__(self, post_id, *, auth_dir=None):
         self.post_id = int(post_id)
         self.post_url = self.post_url.format(post_id=post_id)
+        self.auth_dir = auth_dir
 
     def __eq__(self, other):
         return self.domain == other.domain and self.post_id == other.post_id
@@ -71,21 +73,25 @@ class BooruPost(metaclass=ABCMeta):
         Return the information necessary to use the site as a registered user.
 
         The credentials for a site can theoretically be many different forms, but they will
-        typically be either a username and an API key or pickled cookies from a requests session
+        typically be either a username and an API key or cookie values from a requests session
         that have the username and password hash.
         :return: authentication information
         :rtype: dict[str, str]
         """
-        auth_filename = self.site_name.lower() + '.auth'
+        if not self.auth_dir:
+            # TODO: Replace with with Path.home() once Python 3.4 support is dropped
+            self.auth_dir = Path(os.path.expanduser('~')) / '.note_copy'
 
-        if os.path.isfile(auth_filename):
-            with open(auth_filename, 'rb') as auth_file:
-                auth = pickle.load(auth_file)
+        auth_file = Path(self.auth_dir) / (self.site_name.lower() + '_auth.json')
+
+        try:
+            with auth_file.open('r') as f:
+                auth = json.load(f)
             return auth
-        else:
+        except FileNotFoundError:
             store = yes_no('Store {0} login information?'.format(self.site_name))
             username = input('Username: ')
-            auth_string = getpass.getpass(self.auth_prompt + ': ')
+            auth_string = getpass(self.auth_prompt + ': ')
 
         if self.uses_cookies:
             session = self.login(username, auth_string)
@@ -94,8 +100,10 @@ class BooruPost(metaclass=ABCMeta):
             auth = {'login': username, 'api_key': auth_string}
 
         if store:
-            with open(auth_filename, 'wb') as auth_file:
-                pickle.dump(auth, auth_file)
+            self.auth_dir.mkdir(parents=True)
+
+            with auth_file.open('w') as f:
+                json.dump(auth, f)
 
         return auth
 

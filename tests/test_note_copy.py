@@ -1,3 +1,7 @@
+import json
+import shutil
+from pathlib import Path
+from tempfile import mkdtemp
 from unittest import TestCase
 from unittest import mock
 
@@ -10,7 +14,10 @@ DANBOORU_TEST_AUTH = {
     'login': 'fake_user_for_note_copy_tests',
     'api_key': 'FAKE_API_KEY_FOR_NOTE_COPY_TESTS',
 }
-GELBOORU_TEST_AUTH = {}
+GELBOORU_TEST_AUTH = {
+    'user_id': '1648',
+    'pass_hash': '80c1ed9c72b4d7048851a6a6d629ba4abe5e8c76',
+}
 
 
 class TestNote(TestCase):
@@ -66,10 +73,46 @@ class TestBooruPost(TestCase):
         gelbooru_post = note_copy.GelbooruPost(1234)
         self.assertNotEqual(danbooru_post, gelbooru_post)
 
+    @mock.patch('note_copy.note_copy.getpass')
+    @mock.patch('builtins.input')
+    @mock.patch('note_copy.note_copy.yes_no')
+    @mock.patch('note_copy.note_copy.os.path.expanduser')
+    def test_auth_stores_credentials(self, mock_expanduser, mock_yes_no, mock_input, mock_getpass):
+        tmp_dir = mkdtemp()
+        mock_expanduser.return_value = tmp_dir
+        mock_yes_no.return_value = True
+        mock_input.return_value = 'fake_user_for_note_copy_tests'
+        mock_getpass.return_value = 'FAKE_API_KEY_FOR_NOTE_COPY_TESTS'
+        post = note_copy.DanbooruPost(1234)
+
+        result = post.auth
+        self.assertEqual(result, DANBOORU_TEST_AUTH)
+        auth_file = Path(tmp_dir) / '.note_copy' / 'danbooru_auth.json'
+
+        with auth_file.open('r') as f:
+            self.assertEqual(json.load(f), DANBOORU_TEST_AUTH)
+
+        shutil.rmtree(tmp_dir)
+
 
 class TestDanbooruPost(TestCase):
     def setUp(self):
         self.post = note_copy.DanbooruPost(1437880)
+
+    @mock.patch('note_copy.note_copy.getpass')
+    @mock.patch('builtins.input')
+    @mock.patch('note_copy.note_copy.yes_no')
+    def test_auth(self, mock_yes_no, mock_input, mock_getpass):
+        mock_yes_no.return_value = False
+        mock_input.return_value = 'fake_user_for_note_copy_tests'
+        mock_getpass.return_value = 'FAKE_API_KEY_FOR_NOTE_COPY_TESTS'
+        result = self.post.auth
+        self.assertEqual(result, DANBOORU_TEST_AUTH)
+
+    def test_stored_auth(self):
+        self.post.auth_dir = Path('fixtures') / 'auth'
+        result = self.post.auth
+        self.assertEqual(result, DANBOORU_TEST_AUTH)
 
     # When using VCR tapes, be VERY careful to not commit sensitive information like API keys,
     # session cookies, password hashes, etc.
@@ -105,6 +148,22 @@ class TestDanbooruPost(TestCase):
 class TestGelbooruPost(TestCase):
     def setUp(self):
         self.post = note_copy.GelbooruPost(1904252)
+
+    @vcr.use_cassette('fixtures/vcr_cassettes/test_gelbooru_post/test_auth.yaml')
+    @mock.patch('note_copy.note_copy.getpass')
+    @mock.patch('builtins.input')
+    @mock.patch('note_copy.note_copy.yes_no')
+    def test_auth(self, mock_yes_no, mock_input, mock_getpass):
+        mock_yes_no.return_value = False
+        mock_input.return_value = 'fake_user_for_note_copy_tests'
+        mock_getpass.return_value = 'fake_password'
+        result = self.post.auth
+        self.assertEqual(result, GELBOORU_TEST_AUTH)
+
+    def test_stored_auth(self):
+        self.post.auth_dir = Path('fixtures') / 'auth'
+        result = self.post.auth
+        self.assertEqual(result, GELBOORU_TEST_AUTH)
 
     @vcr.use_cassette('fixtures/vcr_cassettes/test_gelbooru_post/test_notes_property.yaml')
     @mock.patch('note_copy.note_copy.GelbooruPost.auth', new_callable=mock.PropertyMock)

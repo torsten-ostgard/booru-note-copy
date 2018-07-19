@@ -1,0 +1,124 @@
+interactions:
+- request:
+    body: user=fake_user_for_note_copy_tests&pass=fake_password&submit=Log+in
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      Content-Length: ['65']
+      Content-Type: [application/x-www-form-urlencoded]
+      User-Agent: [python-requests/2.19.1]
+    method: POST
+    uri: https://gelbooru.com/index.php?page=account&s=login&code=00
+  response:
+    body: {string: ''}
+    headers:
+      Connection: [keep-alive]
+      Content-Type: [text/html; charset=UTF-8]
+      Date: ['Thu, 19 Jul 2018 23:37:58 GMT']
+      Location: ['index.php?page=account&s=home']
+      Server: [nginx/1.12.2]
+      Set-Cookie: ['user_id=1648; expires=Fri, 19-Jul-2019 23:37:58 GMT; Max-Age=31536000;
+          path=/', 'pass_hash=80c1ed9c72b4d7048851a6a6d629ba4abe5e8c76; expires=Fri,
+          19-Jul-2019 23:37:58 GMT; Max-Age=31536000; path=/']
+      Strict-Transport-Security: [max-age=3600;]
+    status: {code: 302, message: Moved Temporarily}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      Cookie: [user_id=1648; pass_hash=80c1ed9c72b4d7048851a6a6d629ba4abe5e8c76]
+      User-Agent: [python-requests/2.19.1]
+    method: GET
+    uri: https://gelbooru.com/index.php?page=account&s=home
+  response:
+    body: {string: "<!DOCTYPE html><html>\r\n\t<head>\r\n\t\t<meta charset=\"UTF-8\"\
+        >\r\n\t\t<title> | Gelbooru</title><link rel=\"stylesheet\" type=\"text/css\"\
+        \ media=\"screen\" href=\"default.css?50\" title=\"default\" />\r\n\t\t<link\
+        \ rel=\"stylesheet\" type=\"text/css\" media=\"screen\" href=\"css/jquery-ui.css\"\
+        \ title=\"default\" />\r\n\t\t\r\n\t\t<link rel=\"SHORTCUT ICON\" href=\"\
+        favicon.png\" />\r\n\t\t<meta name=\"keywords\" content=\"anime, doujinshi,\
+        \ hentai, porn, sex, japanese hentai, anime hentai, imageboard\" />\r\n\t\t\
+        <meta name=\"description\" content=\"Gelbooru is one of the largest hentai\
+        \ and safe image resource available! Over a million images for you to search\
+        \ and view, and it is all free!\" />\r\n\t\t<meta name=\"rating\" content=\"\
+        mature\" />\r\n\t\t<link rel=\"search\" type=\"application/opensearchdescription+xml\"\
+        \ title=\"Gelbooru.com: Coded by Geltas\" href=\"gelbooru.xml\" />\r\n\t\t\
+        \r\n\t\t<script src=\"https://www.google.com/recaptcha/api.js\"></script>\r\
+        \n\t\t<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js\"\
+        ></script>\r\n\t\t<script type=\"text/javascript\" src=\"//gelbooru.com/script/application.js?55\"\
+        ></script>\r\n\t</head>\r\n\t<body>\r\n\t\t<script type=\"text/javascript\"\
+        \ src=\"https://ads.exoclick.com/ad_track.js\"></script>\r\n\t\t<div class=\"\
+        header\">\r\n\t\t\t<div class=\"center\">\r\n\t\t\t\t<h2 class=\"siteName\"\
+        ><a href=\"//gelbooru.com/\">Gelbooru</a></h2>\r\n\t\t\t\t<ul class=\"flat-list\"\
+        >\r\n\t\t\t\t\t<li class=\"current-page\"><a href=\"index.php?page=account&amp;s=home\"\
+        >My Account</a></li>\r\n\t\t\t\t\t<li><a href=\"index.php?page=post&amp;s=list&amp;tags=all\"\
+        >Posts</a></li>\r\n\t\t\t\t\t<li><a href=\"index.php?page=comment&amp;s=list\"\
+        >Comments</a></li>\r\n\t\t\t\t\t<li><a href=\"index.php?page=wiki&amp;s=list\"\
+        >Wiki</a></li>\r\n\t\t\t\t\t<li><a href=\"index.php?page=tags&amp;s=list\"\
+        >Tags</a></li>\r\n\t\t\t\t\t<li><a href=\"index.php?page=pool&amp;s=list\"\
+        >Pools</a></li>\r\n\t\t\t\t\t<li><a href=\"index.php?page=forum&amp;s=list\"\
+        >Forum</a></li>\r\n\t\t\t\t\t<li><a href=\"index.php?page=tracker&amp;s=list\"\
+        >Trac</a></li>\r\n\t\t\t\t\t<li><a href=\"http://thedoujin.com/\" target=\"\
+        _BLANK\" style=\"color: #fff000;\"><b>Doujin</b></a></li>\r\n\t\t\t\t\t<li><a\
+        \ href=\"index.php?page=help\" style=\"color: #00ff00;\"><b>Help</b></a></li>\r\
+        \n\t\t\t\t</ul>\r\n\t\t\t</div>\r\n\t\t</div><div class=\"submenu\">\r\n\t\
+        \t\t<div class=\"center\"><ul class=\"flat-list2\"><li><a href=\"index.php?page=account&amp;s=home\"\
+        >Home</a></li><li><a href=\"index.php?page=account&amp;s=profile&amp;id=1648\"\
+        >My Profile</a></li><li><a href=\"index.php?page=gmail&amp;s=home\">My Mail</a></li><li><a\
+        \ href=\"index.php?page=favorites&amp;s=view&amp;id=1648\">My Favorites</a></li><li><a\
+        \ href=\"index.php?page=account&amp;s=options\">Options</a></li></ul></div></div>\r\
+        \n\t\t<div class=\"noticeError\" style=\"\">\r\n\t\t\t<div class=\"center\"\
+        >\r\n\t\t\t\t<i><b>Notice</b></i>: We are now selling NEW <a href=\"https://buymyshit.moneygrubbingwhore.com/?1\"\
+        \ style=\"color: #ffff00; font-weight: bold;\" target=\"_blank\">Gelbooru\
+        \ Merch~</a>! Domestic shipping is free on all orders! Do you have an artist\
+        \ tag on Gelbooru? <a href=\"https://discord.gg/PQ3UMur\" target=\"_blank\"\
+        \ rel=\"nofollow\" style=\"color: #ffff00;\">Let us know so we can properly\
+        \ credit you!</a>\r\n\t\t\t</div>\r\n\t\t</div>\r\n\t<div id=\"long-notice\"\
+        ></div><div id=\"notice\" style=\"display: none;\"></div>\r\n\t<div class=\"\
+        success-notice\" style=\"font-weight: bold;\" ><a href=\"index.php?page=gmail\"\
+        >You have mail</a></div><br /><div id=\"content\"><div class=\"content\"><div\
+        \ style=\"font-size: 11px; color: #5a5a5a; font-family: tahoma, arial, sans-serif;\
+        \ width: 300px; float: left; border: 1px solid #f0f0f0; padding: 10px 20px\
+        \ 0px 20px;\"><h2>My Account Home</h2><br />\r\n\t\t<a href=\"index.php?page=account&amp;s=login&amp;code=01\"\
+        \ style=\"font-size: 12px; font-weight: bold;\">Logout</a><br />\r\n\t\t<p>Make\
+        \ like a tree and get out of here! This will delete the cookies that are required\
+        \ to authenticate your account.</p><br />\r\n\t\t<a href=\"index.php?page=account&s=profile&id=1648\"\
+        \ style=\"font-size: 12px; font-weight: bold;\">My Profile</a><br /\r\n\t\t\
+        <p>View your profile as others would see it. This page will show your recent\
+        \ uploads, favorites and avatar, if you have one.</p><br />\r\n\t\t<a href=\"\
+        index.php?page=gmail&amp;s=home\" style=\"font-size: 12px; font-weight: bold;\"\
+        >My Mail</a><br />\r\n\t\t<p>Read all mail sent to you as well as moderator\
+        \ notices. You will not really be able to edit anything here until your inbox\
+        \ is completely caught up on.</p><br />\r\n\t\t<a href=\"index.php?page=favorites&amp;s=view&amp;id=1648\"\
+        \ style=\"font-size: 12px; font-weight: bold;\">My Favorites</a><br />\r\n\
+        \t\t<p>View a condensed list of all your favorites on the site. This should\
+        \ be rather short, unless you like everything you see... Which you probably\
+        \ do.</p><br />\r\n\t\t<a href=\"index.php?page=account&amp;s=change_password\"\
+        \ style=\"font-size: 12px; font-weight: bold;\">Change your password</a><br\
+        \ />\r\n\t\t<p>Finally a way to change your password. It only took a few years,\
+        \ right?</p><br />\r\n\t\t<a href=\"http://gelbooru.com/index.php?page=patreon\"\
+        \ style=\"font-size: 12px; font-weight: bold;\">Claim your Patreon rewards</a><br\
+        \ />\r\n\t\t<p>Claim the rewards you have earned by <a href=\"https://patreon.com/gelbooru\"\
+        >supporting us on Patreon!</a></p><br />\r\n\t\t<a href=\"index.php?page=tags&s=saved_search\"\
+        \ style=\"font-size: 12px; font-weight: bold;\">Saved Searches</a><br />\r\
+        \n\t\t<p>All of the searches you have saved on the website, located in a single\
+        \ area for your convenience.</p><br />\r\n\t\t<br /><br />\r\n<a href=\"index.php?page=favorites&amp;s=list\"\
+        \ style=\"font-size: 12px; font-weight: bold;\"> Everyone's Favorites</a><br\
+        \ />\r\n<p>If you like to stalk other people and steal their ideas, you can\
+        \ view their favorites and eventually transform into a clone of them. I swear\
+        \ it's true.</p><br />\r\n<a href=\"index.php?page=account&amp;s=options\"\
+        \ style=\"font-size: 12px; font-weight: bold;\">Options</a><br />\r\n<p>Account\
+        \ options such as blacklists, safe only searching, and almost anything configurable\
+        \ for your account is on this page. You should not really spend too much time\
+        \ here.</p><br />\r\n</div></div></div></div></body></html>"}
+    headers:
+      Connection: [keep-alive]
+      Content-Type: [text/html; charset=UTF-8]
+      Date: ['Thu, 19 Jul 2018 23:37:58 GMT']
+      Server: [nginx/1.12.2]
+      Strict-Transport-Security: [max-age=3600;]
+    status: {code: 200, message: OK}
+version: 1
