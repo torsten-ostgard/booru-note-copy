@@ -1,22 +1,23 @@
-from __future__ import print_function
-
-import getpass
 import inspect
+import json
 import os
-import pickle
 import re
 import sys
 import time
 from abc import ABCMeta
 from abc import abstractmethod
+from getpass import getpass
+from pathlib import Path
+from urllib.parse import quote
 
 import defusedxml.ElementTree as ET
 import requests
-from six import add_metaclass
-from six.moves import input
-from six.moves.urllib.parse import quote
+from cached_property import cached_property
 
+from .exceptions import NoSupportedSites
+from .exceptions import UnsupportedSite
 from .utils import yes_no
+from .utils import convert_xml_to_dict
 
 TAGS_TO_REMOVE = [
     'translation_request',
@@ -26,7 +27,7 @@ TAGS_TO_REMOVE = [
 POST_PATTERN = re.compile(r'(\D+?)(\d+)')
 
 
-class Note(object):
+class Note:
     """
     A translation note on an image.
     """
@@ -36,6 +37,9 @@ class Note(object):
         self.width = int(width)
         self.height = int(height)
         self.body = body
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
 
     def __str__(self):
         body = (self.body if len(self.body) < 30 else self.body[0:27] + '...')
@@ -48,41 +52,46 @@ class Note(object):
         )
 
 
-@add_metaclass(ABCMeta)
-class BooruPost(object):
+class BooruPost(metaclass=ABCMeta):
     """
     A post on a booru-style imageboard.
     """
-    def __init__(self, post_id):
-        self.post_id = post_id
+    def __init__(self, post_id, *, auth_dir=None):
+        self.post_id = int(post_id)
         self.post_url = self.post_url.format(post_id=post_id)
-        self.auth = self.get_auth()
-        self.post_info = self.get_post_info()
-        self.notes = self.get_notes()
+        self.auth_dir = auth_dir
+
+    def __eq__(self, other):
+        return self.domain == other.domain and self.post_id == other.post_id
 
     def __str__(self):
         return '{0} Post - {1}'.format(self.site_name, self.post_id)
 
-    def get_auth(self):
+    @cached_property
+    def auth(self):
         """
         Return the information necessary to use the site as a registered user.
 
         The credentials for a site can theoretically be many different forms, but they will
-        typically be either a username and an API key or pickled cookies from a requests session
+        typically be either a username and an API key or cookie values from a requests session
         that have the username and password hash.
         :return: authentication information
         :rtype: dict[str, str]
         """
-        auth_filename = self.site_name.lower() + '.auth'
+        if not self.auth_dir:
+            # TODO: Replace with with Path.home() once Python 3.4 support is dropped
+            self.auth_dir = Path(os.path.expanduser('~')) / '.note_copy'
 
-        if os.path.isfile(auth_filename):
-            with open(auth_filename, 'rb') as auth_file:
-                auth = pickle.load(auth_file)
+        auth_file = Path(self.auth_dir) / (self.site_name.lower() + '_auth.json')
+
+        try:
+            with auth_file.open('r') as f:
+                auth = json.load(f)
             return auth
-        else:
+        except FileNotFoundError:
             store = yes_no('Store {0} login information?'.format(self.site_name))
             username = input('Username: ')
-            auth_string = getpass.getpass(self.auth_prompt + ': ')
+            auth_string = getpass(self.auth_prompt + ': ')
 
         if self.uses_cookies:
             session = self.login(username, auth_string)
@@ -91,13 +100,15 @@ class BooruPost(object):
             auth = {'login': username, 'api_key': auth_string}
 
         if store:
-            with open(auth_filename, 'wb') as auth_file:
-                pickle.dump(auth, auth_file)
+            self.auth_dir.mkdir(parents=True)
+
+            with auth_file.open('w') as f:
+                json.dump(auth, f)
 
         return auth
 
     @abstractmethod
-    def get_notes(self):
+    def notes(self):
         """
         :return: all current notes attached to a post
         :rtype: list[Note]
@@ -105,7 +116,7 @@ class BooruPost(object):
         raise NotImplementedError
 
     @abstractmethod
-    def get_post_info(self):
+    def post_info(self):
         raise NotImplementedError
 
     @property
@@ -116,24 +127,6 @@ class BooruPost(object):
         :rtype: (int, int)
         """
         raise NotImplementedError
-
-    def scale_note(self, source_note, source_post):
-        """
-        Transforms a note to be proportional to the destination image.
-
-        :return: a new note
-        :rtype: Note
-        """
-        image_width, image_height = self.dimensions
-        source_image_width, source_image_height = source_post.dimensions
-        x_ratio = image_width / source_image_width
-        y_ratio = image_height / source_image_height
-        scaled_width = source_note.width * x_ratio
-        scaled_height = source_note.height * y_ratio
-        scaled_x = source_note.x * x_ratio
-        scaled_y = source_note.y * y_ratio
-
-        return Note(scaled_x, scaled_y, scaled_width, scaled_height, source_note.body)
 
     @abstractmethod
     def write_note(self, note):
@@ -165,7 +158,7 @@ class BooruPost(object):
         """
         for note in source_post.notes:
             if not same_size:
-                note = self.scale_note(note, source_post)
+                note = scale_note(note, source_post.dimensions, self.dimensions)
 
             self.write_note(note)
             time.sleep(self.cooldown)
@@ -179,6 +172,10 @@ class BooruPost(object):
             dest_id=self.post_id,
         ))
 
+        # Invalidate cached properties
+        del self.__dict__['post_info']
+        del self.__dict__['notes']
+
 
 class DanbooruPost(BooruPost):
     site_name = 'Danbooru'
@@ -191,7 +188,8 @@ class DanbooruPost(BooruPost):
     uses_cookies = False
     cooldown = 1
 
-    def get_notes(self):
+    @cached_property
+    def notes(self):
         notes = []
         params = {'group_by': 'note', 'search[post_id]': self.post_id}
         params.update(self.auth)
@@ -210,7 +208,8 @@ class DanbooruPost(BooruPost):
 
         return notes
 
-    def get_post_info(self):
+    @cached_property
+    def post_info(self):
         """
         :return: a dictionary of post metadata
         :rtype: dict[str, str]
@@ -258,33 +257,37 @@ class GelbooruPost(BooruPost):
         session.post(self.login_url, data=payload)
         return session
 
-    def get_post_info(self):
+    @cached_property
+    def post_info(self):
         """
-        :return: the XML tree of post metadata
-        :rtype: xml.etree.ElementTree.Element
+        :return: a dictionary of post metadata
+        :rtype: dict[str, str|int]
         """
         r = requests.get(self.post_url, cookies=self.auth)
         root = ET.fromstring(r.text)
-        return root.find('post')
+        d = convert_xml_to_dict(root)
+        return d['posts'][0]
 
     @property
     def dimensions(self):
-        return int(self.post_info.get('height')), int(self.post_info.get('width'))
+        return self.post_info['height'], self.post_info['width']
 
-    def get_notes(self):
+    @cached_property
+    def notes(self):
         self.note_url = self.note_url.format(post_id=self.post_id)
         notes = []
         r = requests.get(self.note_url, cookies=self.auth)
         root = ET.fromstring(r.text)
-        api_notes = root.findall('note')
+        d = convert_xml_to_dict(root)
+        api_notes = d['notes']
 
         for note in api_notes:
-            body = note.get('body').replace('<br />', '\n')
+            body = note['body'].replace('<br />', '\n')
             notes.append(Note(
-                note.get('x'),
-                note.get('y'),
-                note.get('width'),
-                note.get('height'),
+                note['x'],
+                note['y'],
+                note['width'],
+                note['height'],
                 body,
             ))
 
@@ -304,15 +307,13 @@ class GelbooruPost(BooruPost):
         requests.post(url, data=payload, cookies=self.auth)
 
     def update_tags(self):
-        rating = self.post_info.get('rating')
-        title = self.post_info.get('title')
-        # If there is no title, get() returns None, which is an invalid value for Gelbooru, so make
-        # the title an empty string
-        title = (title if title else '')
-        source = self.post_info.get('source')
-        tag_string = change_tags(self.post_info.get('tags'))
+        rating = self.post_info['rating']
+        # None is an invalid value for Gelbooru, so make the title an empty string if not found
+        title = self.post_info.get('title', '')
+        source = self.post_info['source']
+        tag_string = change_tags(self.post_info['tags'])
         pconf = '1'
-        lupdated = self.post_info.get('change')
+        lupdated = self.post_info['change']
         submit = 'Save changes'
 
         payload = {
@@ -331,18 +332,18 @@ class GelbooruPost(BooruPost):
 
 def get_valid_classes():
     """
-    :return: a list of classes representing the sites supported by this script
-    :rtype: list[BooruPost]
+    :return: a set of classes representing the sites supported by this script
+    :rtype: set[BooruPost]
     """
     classes = [cls[1] for cls in inspect.getmembers(sys.modules[__name__], inspect.isclass)]
-    valid_classes = []
+    valid_classes = set()
 
     for cls in classes:
         if issubclass(cls, BooruPost):
             try:
                 # Ensure that only implemented classes get returned
                 cls.domain
-                valid_classes.append(cls)
+                valid_classes.add(cls)
             except AttributeError:
                 continue
 
@@ -354,7 +355,7 @@ def copy_notes(valid_classes, source_id, destination_id):
     Copy notes from the source post to the destrination post
 
     :param valid_classes: classes representing the supported sites
-    :type valid_classes: list of BooruPost classes
+    :type valid_classes: set[BooruPost]
     :param source_id: the site code and post number of the source post
     :type source_id: str
     :param destination_id: the site code and post number of the destination post
@@ -380,15 +381,36 @@ def instantiate_post(valid_classes, post_string):
     :return: an object representing the given post
     :rtype: BooruPost
     """
+    if not valid_classes:
+        raise NoSupportedSites()
+
     matches = re.search(POST_PATTERN, post_string)
     site_identifier, post_id = matches.groups()
 
     for cls in valid_classes:
-        if site_identifier.lower() in (cls.short_code, cls.domain):
+        if site_identifier.lower() in {cls.short_code, cls.domain}:
             return cls(post_id)
 
-    # TODO: This should probably be a custom exception
-    raise Exception('No supported site found for identifier: ' + site_identifier)
+    raise UnsupportedSite('No supported site found for identifier: ' + site_identifier)
+
+
+def scale_note(source_note, source_dimensions, destination_dimensions):
+    """
+    Transforms a note to be proportional to the destination image.
+
+    :return: a new note
+    :rtype: Note
+    """
+    image_width, image_height = destination_dimensions
+    source_image_width, source_image_height = source_dimensions
+    x_ratio = image_width / source_image_width
+    y_ratio = image_height / source_image_height
+    scaled_width = source_note.width * x_ratio
+    scaled_height = source_note.height * y_ratio
+    scaled_x = source_note.x * x_ratio
+    scaled_y = source_note.y * y_ratio
+
+    return Note(scaled_x, scaled_y, scaled_width, scaled_height, source_note.body)
 
 
 def change_tags(tag_string):

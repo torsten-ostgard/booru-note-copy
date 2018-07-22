@@ -6,8 +6,10 @@ name = "pypi"
 [dev-packages]
 coverage = "*"
 flake8 = "*"
+tox = "*"
+vcrpy = "*"
 
 [packages]
+cached-property = "*"
 defusedxml = "*"
 requests = "*"
-six = "*"
