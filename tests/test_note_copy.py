@@ -121,6 +121,7 @@ class TestDanbooruPost(TestCase):
     @mock.patch('builtins.input')
     @mock.patch('note_copy.note_copy.yes_no')
     def test_auth(self, mock_yes_no, mock_input, mock_getpass):
+        self.post.auth_dir = Path('does_not_exist')
         mock_yes_no.return_value = False
         mock_input.return_value = 'fake_user_for_note_copy_tests'
         mock_getpass.return_value = 'FAKE_API_KEY_FOR_NOTE_COPY_TESTS'
@@ -172,6 +173,7 @@ class TestGelbooruPost(TestCase):
     @mock.patch('builtins.input')
     @mock.patch('note_copy.note_copy.yes_no')
     def test_auth(self, mock_yes_no, mock_input, mock_getpass):
+        self.post.auth_dir = Path('does_not_exist')
         mock_yes_no.return_value = False
         mock_input.return_value = 'fake_user_for_note_copy_tests'
         mock_getpass.return_value = 'fake_password'
