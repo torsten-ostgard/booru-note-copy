@@ -100,7 +100,7 @@ class BooruPost(metaclass=ABCMeta):
             auth = {'login': username, 'api_key': auth_string}
 
         if store:
-            self.auth_dir.mkdir(parents=True)
+            self.auth_dir.mkdir(parents=True, exist_ok=True)
 
             with auth_file.open('w') as f:
                 json.dump(auth, f)
