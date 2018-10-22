@@ -279,7 +279,7 @@ class GelbooruPost(BooruPost):
         r = requests.get(self.note_url, cookies=self.auth)
         root = ET.fromstring(r.text)
         d = convert_xml_to_dict(root)
-        api_notes = d['notes']
+        api_notes = d.get('notes', [])
 
         for note in api_notes:
             body = note['body'].replace('<br />', '\n')
