@@ -264,3 +264,14 @@ class TestChangeTags(TestCase):
         )
         result = note_copy.change_tags(tag_string)
         self.assertEqual(expected_result, result)
+
+
+class TestIntegration(TestCase):
+    @vcr.use_cassette('fixtures/vcr_cassettes/test_copy_notes/test_copy_notes.yaml')
+    @mock.patch('note_copy.note_copy.time.sleep')
+    def test_copy_notes(self, mock_sleep):
+        # If a new integration test needs to be recorded, unmock sleep request
+        danbooru_post = note_copy.DanbooruPost(284341)
+        gelbooru_post = note_copy.GelbooruPost(302693)
+        gelbooru_post.copy_notes_from_post(danbooru_post)
+        self.assertEqual(set(danbooru_post.notes), set(gelbooru_post.notes))
