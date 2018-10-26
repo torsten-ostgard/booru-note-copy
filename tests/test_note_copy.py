@@ -49,6 +49,10 @@ class TestNote(TestCase):
         result = str(note_copy.Note(1, 2, 3, 4, 'abcdefghijklmnopqrstuvwxyz123'))
         self.assertEqual(expected_result, result)
 
+    def test_repr(self):
+        note = note_copy.Note(1, 2, 3, 4, '"I swear I don\'t even"')
+        self.assertEqual(note, eval(repr(note)))
+
 
 class TestScaleNote(TestCase):
     def test_scale_note(self):
