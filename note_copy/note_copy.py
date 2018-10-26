@@ -61,6 +61,9 @@ class Note:
             body=body,
         )
 
+    def __hash__(self):
+        return hash(repr(self))
+
 
 class BooruPost(metaclass=ABCMeta):
     """
