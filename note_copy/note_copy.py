@@ -169,13 +169,16 @@ class BooruPost(metaclass=ABCMeta):
         :param same_size: whether the two images are equal in height and width
         :type same_size: bool
         """
+        copied_notes = []
         for note in source_post.notes:
             if not same_size:
                 note = scale_note(note, source_post.dimensions, self.dimensions)
 
             self.write_note(note)
+            copied_notes.append(note)
             time.sleep(self.cooldown)
 
+        self.notes = copied_notes
         self.update_tags()
         message = 'Notes successfully copied from {src_site} #{src_id} to {dest_site} #{dest_id}'
         print(message.format(
@@ -187,7 +190,6 @@ class BooruPost(metaclass=ABCMeta):
 
         # Invalidate cached properties
         del self.__dict__['post_info']
-        del self.__dict__['notes']
 
 
 class DanbooruPost(BooruPost):
