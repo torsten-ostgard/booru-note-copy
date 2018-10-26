@@ -18,28 +18,37 @@ class TestMain(TestCase):
         sys.stderr = self.original_stderr
         sys.argv = self.original_argv
 
-    @mock.patch('note_copy.cli.note_copy.copy_notes')
-    def test_source_and_destination(self, mock_copy_notes):
+    @mock.patch('note_copy.cli.note_copy.instantiate_post')
+    @mock.patch('note_copy.cli.note_copy.BooruPost.copy_notes_from_post')
+    def test_source_and_destination(self, mock_copy_notes, mock_instantiate_post):
+        posts = [
+            note_copy.DanbooruPost(1437880),
+            note_copy.GelbooruPost(1904252),
+        ]
+        mock_instantiate_post.side_effect = posts
         sys.argv = ['', '--source', 'd1437880', '--destination', 'g1904252']
         main()
-        valid_classes = {note_copy.DanbooruPost, note_copy.GelbooruPost}
-        c = mock.call(valid_classes, 'd1437880', 'g1904252')
+        c = mock.call(posts[0])
         mock_copy_notes.assert_has_calls([c])
 
     @mock.patch('note_copy.cli.time')
     @mock.patch('builtins.open')
-    @mock.patch('note_copy.cli.note_copy.copy_notes')
-    def test_file(self, mock_copy_notes, mock_open, mock_time):
+    @mock.patch('note_copy.cli.note_copy.instantiate_post')
+    @mock.patch('note_copy.cli.note_copy.BooruPost.copy_notes_from_post')
+    def test_file(self, mock_copy_notes, mock_instantiate_post, mock_open, mock_time):
         # TODO: Get more interesting post numbers for the second set
+        posts = [
+            note_copy.DanbooruPost(1437880),
+            note_copy.GelbooruPost(1904252),
+            note_copy.DanbooruPost(12345),
+            note_copy.GelbooruPost(12345),
+        ]
+        mock_instantiate_post.side_effect = posts
         ids = 'd1437880\t g1904252\n\n\nd12345    g12345   \n'
         mock_open.return_value = StringIO(ids)
         sys.argv = ['', '--file', '/tmp/mock_file']
         main()
-        valid_classes = {note_copy.DanbooruPost, note_copy.GelbooruPost}
-        copy_notes_calls = [
-            mock.call(valid_classes, 'd1437880', 'g1904252'),
-            mock.call(valid_classes, 'd12345', 'g12345'),
-        ]
+        copy_notes_calls = [mock.call(p) for p in posts if type(p) is note_copy.DanbooruPost]
         cooldown = note_copy.GelbooruPost.cooldown
         sleep_calls = [mock.call(cooldown), mock.call(cooldown)]
         mock_copy_notes.assert_has_calls(copy_notes_calls)

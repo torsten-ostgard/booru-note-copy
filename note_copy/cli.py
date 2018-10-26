@@ -17,7 +17,9 @@ def main():
     valid_classes = note_copy.get_valid_classes()
 
     if args.source and args.destination:
-        note_copy.copy_notes(valid_classes, args.source, args.destination)
+        source = note_copy.instantiate_post(valid_classes, args.source)
+        destination = note_copy.instantiate_post(valid_classes, args.destination)
+        destination.copy_notes_from_post(source)
     elif args.file:
         cooldown = max(cls.cooldown for cls in valid_classes)
         with open(args.file, 'r') as f:
@@ -29,7 +31,9 @@ def main():
                     continue
 
                 source_id, destination_id = line.split()
-                note_copy.copy_notes(valid_classes, source_id, destination_id)
+                source = note_copy.instantiate_post(valid_classes, source_id)
+                destination = note_copy.instantiate_post(valid_classes, destination_id)
+                destination.copy_notes_from_post(source)
                 time.sleep(cooldown)
     elif args.source or args.destination:
         print('Specify two post numbers', file=sys.stderr)

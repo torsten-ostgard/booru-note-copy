@@ -363,22 +363,6 @@ def get_valid_classes():
     return valid_classes
 
 
-def copy_notes(valid_classes, source_id, destination_id):
-    """
-    Copy notes from the source post to the destrination post
-
-    :param valid_classes: classes representing the supported sites
-    :type valid_classes: set[BooruPost]
-    :param source_id: the site code and post number of the source post
-    :type source_id: str
-    :param destination_id: the site code and post number of the destination post
-    :type destination_id: str
-    """
-    source = instantiate_post(valid_classes, source_id)
-    destination = instantiate_post(valid_classes, destination_id)
-    destination.copy_notes_from_post(source)
-
-
 def instantiate_post(valid_classes, post_string):
     """
     Create a BooruPost object from a string
