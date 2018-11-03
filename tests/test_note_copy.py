@@ -196,6 +196,13 @@ class TestGelbooruPost(TestCase):
         result = self.post.notes
         self.assertEqual(expected_result, result)
 
+    @vcr.use_cassette('fixtures/vcr_cassettes/test_gelbooru_post/test_notes_property_no_notes.yaml')
+    @mock.patch('note_copy.note_copy.GelbooruPost.auth', new_callable=mock.PropertyMock)
+    def test_notes_property_no_notes(self, mock_auth):
+        mock_auth.return_value = GELBOORU_TEST_AUTH
+        result = self.post.notes
+        self.assertEqual([], result)
+
     @vcr.use_cassette('fixtures/vcr_cassettes/test_gelbooru_post/test_post_info_property.yaml')
     @mock.patch('note_copy.note_copy.GelbooruPost.auth', new_callable=mock.PropertyMock)
     def test_post_info_property(self, mock_auth):

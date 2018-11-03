@@ -1,0 +1,20 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.19.0]
+    method: GET
+    uri: https://gelbooru.com/index.php?page=dapi&s=note&q=index&post_id=1904252
+  response:
+    body: {string: '<notes type="array"/>'}
+    headers:
+      Connection: [keep-alive]
+      Content-Type: [text/xml;charset=UTF-8]
+      Date: ['Wed, 13 Jun 2018 23:54:26 GMT']
+      Server: [nginx/1.12.2]
+      Strict-Transport-Security: [max-age=3600;]
+    status: {code: 200, message: OK}
+version: 1
