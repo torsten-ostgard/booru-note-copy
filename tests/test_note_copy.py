@@ -5,6 +5,7 @@ from tempfile import mkdtemp
 from unittest import TestCase
 from unittest import mock
 
+import requests
 import vcr
 
 from note_copy import exceptions
@@ -86,15 +87,32 @@ class TestBooruPost(TestCase):
         mock_expanduser.return_value = tmp_dir
         mock_yes_no.return_value = True
         mock_input.return_value = 'fake_user_for_note_copy_tests'
-        mock_getpass.return_value = 'FAKE_API_KEY_FOR_NOTE_COPY_TESTS'
-        post = note_copy.DanbooruPost(1234)
+        mock_getpass.side_effect = ['FAKE_API_KEY_FOR_NOTE_COPY_TESTS', 'fake_password']
+        session = mock.Mock()
+        jar = requests.cookies.RequestsCookieJar()
+        jar.set('user_id', '1648')
+        jar.set('pass_hash', '80c1ed9c72b4d7048851a6a6d629ba4abe5e8c76')
+        session.cookies = jar
+        def mock_login(username, auth_string):
+            return session
 
-        result = post.auth
-        self.assertEqual(result, DANBOORU_TEST_AUTH)
-        auth_file = Path(tmp_dir) / '.note_copy' / 'danbooru_auth.json'
+        danbooru_post = note_copy.DanbooruPost(1234)
+        gelbooru_post = note_copy.GelbooruPost(1234)
+        gelbooru_post.login = mock_login
 
-        with auth_file.open('r') as f:
+        danbooru_auth = danbooru_post.auth
+        gelbooru_auth = gelbooru_post.auth
+
+        self.assertEqual(danbooru_auth, DANBOORU_TEST_AUTH)
+        self.assertEqual(gelbooru_auth, GELBOORU_TEST_AUTH)
+        danbooru_auth_file = Path(tmp_dir) / '.note_copy' / 'danbooru_auth.json'
+        gelbooru_auth_file = Path(tmp_dir) / '.note_copy' / 'gelbooru_auth.json'
+
+        with danbooru_auth_file.open('r') as f:
             self.assertEqual(json.load(f), DANBOORU_TEST_AUTH)
+
+        with gelbooru_auth_file.open('r') as f:
+            self.assertEqual(json.load(f), GELBOORU_TEST_AUTH)
 
         shutil.rmtree(tmp_dir)
 
@@ -107,6 +125,7 @@ class TestDanbooruPost(TestCase):
     @mock.patch('builtins.input')
     @mock.patch('note_copy.note_copy.yes_no')
     def test_auth(self, mock_yes_no, mock_input, mock_getpass):
+        self.post.auth_dir = Path('does_not_exist')
         mock_yes_no.return_value = False
         mock_input.return_value = 'fake_user_for_note_copy_tests'
         mock_getpass.return_value = 'FAKE_API_KEY_FOR_NOTE_COPY_TESTS'
@@ -158,6 +177,7 @@ class TestGelbooruPost(TestCase):
     @mock.patch('builtins.input')
     @mock.patch('note_copy.note_copy.yes_no')
     def test_auth(self, mock_yes_no, mock_input, mock_getpass):
+        self.post.auth_dir = Path('does_not_exist')
         mock_yes_no.return_value = False
         mock_input.return_value = 'fake_user_for_note_copy_tests'
         mock_getpass.return_value = 'fake_password'
@@ -179,6 +199,13 @@ class TestGelbooruPost(TestCase):
         ]
         result = self.post.notes
         self.assertEqual(expected_result, result)
+
+    @vcr.use_cassette('fixtures/vcr_cassettes/test_gelbooru_post/test_notes_property_no_notes.yaml')
+    @mock.patch('note_copy.note_copy.GelbooruPost.auth', new_callable=mock.PropertyMock)
+    def test_notes_property_no_notes(self, mock_auth):
+        mock_auth.return_value = GELBOORU_TEST_AUTH
+        result = self.post.notes
+        self.assertEqual([], result)
 
     @vcr.use_cassette('fixtures/vcr_cassettes/test_gelbooru_post/test_post_info_property.yaml')
     @mock.patch('note_copy.note_copy.GelbooruPost.auth', new_callable=mock.PropertyMock)

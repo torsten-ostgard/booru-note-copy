@@ -113,7 +113,7 @@ class BooruPost(metaclass=ABCMeta):
             auth = {'login': username, 'api_key': auth_string}
 
         if store:
-            self.auth_dir.mkdir(parents=True)
+            self.auth_dir.mkdir(parents=True, exist_ok=True)
 
             with auth_file.open('w') as f:
                 json.dump(auth, f)
@@ -294,7 +294,7 @@ class GelbooruPost(BooruPost):
         r = requests.get(self.note_url, cookies=self.auth)
         root = ET.fromstring(r.text)
         d = convert_xml_to_dict(root)
-        api_notes = d['notes']
+        api_notes = d.get('notes', [])
 
         for note in api_notes:
             body = note['body'].replace('<br />', '\n')
