@@ -41,6 +41,16 @@ class Note:
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
 
+    def __repr__(self):
+        body = self.body.replace("'", "\\'")
+        return "note_copy.Note({x}, {y}, {width}, {height}, '{body}')".format(
+            width=self.width,
+            height=self.height,
+            x=self.x,
+            y=self.y,
+            body=body,
+        )
+
     def __str__(self):
         body = (self.body if len(self.body) < 30 else self.body[0:27] + '...')
         return "{width}x{height} {x},{y} {body}".format(
@@ -50,6 +60,9 @@ class Note:
             y=self.y,
             body=body,
         )
+
+    def __hash__(self):
+        return hash(repr(self))
 
 
 class BooruPost(metaclass=ABCMeta):
@@ -156,13 +169,16 @@ class BooruPost(metaclass=ABCMeta):
         :param same_size: whether the two images are equal in height and width
         :type same_size: bool
         """
+        copied_notes = []
         for note in source_post.notes:
             if not same_size:
                 note = scale_note(note, source_post.dimensions, self.dimensions)
 
             self.write_note(note)
+            copied_notes.append(note)
             time.sleep(self.cooldown)
 
+        self.notes = copied_notes
         self.update_tags()
         message = 'Notes successfully copied from {src_site} #{src_id} to {dest_site} #{dest_id}'
         print(message.format(
@@ -174,7 +190,6 @@ class BooruPost(metaclass=ABCMeta):
 
         # Invalidate cached properties
         del self.__dict__['post_info']
-        del self.__dict__['notes']
 
 
 class DanbooruPost(BooruPost):
@@ -348,22 +363,6 @@ def get_valid_classes():
                 continue
 
     return valid_classes
-
-
-def copy_notes(valid_classes, source_id, destination_id):
-    """
-    Copy notes from the source post to the destrination post
-
-    :param valid_classes: classes representing the supported sites
-    :type valid_classes: set[BooruPost]
-    :param source_id: the site code and post number of the source post
-    :type source_id: str
-    :param destination_id: the site code and post number of the destination post
-    :type destination_id: str
-    """
-    source = instantiate_post(valid_classes, source_id)
-    destination = instantiate_post(valid_classes, destination_id)
-    destination.copy_notes_from_post(source)
 
 
 def instantiate_post(valid_classes, post_string):
