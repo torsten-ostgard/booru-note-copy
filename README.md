@@ -17,7 +17,7 @@ The lower-case prefixes are called short codes and - along with the domain name,
 
 
 ## Requirements
-- Python 3.4+
+- Python 3.5+
 
 
 ## Usage
