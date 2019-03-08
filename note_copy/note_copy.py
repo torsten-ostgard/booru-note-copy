@@ -92,8 +92,7 @@ class BooruPost(metaclass=ABCMeta):
         :rtype: dict[str, str]
         """
         if not self.auth_dir:
-            # TODO: Replace with with Path.home() once Python 3.4 support is dropped
-            self.auth_dir = Path(os.path.expanduser('~')) / '.note_copy'
+            self.auth_dir = Path.home() / '.note_copy'
 
         auth_file = Path(self.auth_dir) / (self.site_name.lower() + '_auth.json')
 

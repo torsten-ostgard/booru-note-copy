@@ -81,10 +81,10 @@ class TestBooruPost(TestCase):
     @mock.patch('note_copy.note_copy.getpass')
     @mock.patch('builtins.input')
     @mock.patch('note_copy.note_copy.yes_no')
-    @mock.patch('note_copy.note_copy.os.path.expanduser')
-    def test_auth_stores_credentials(self, mock_expanduser, mock_yes_no, mock_input, mock_getpass):
+    @mock.patch('note_copy.note_copy.Path.home')
+    def test_auth_stores_credentials(self, mock_home, mock_yes_no, mock_input, mock_getpass):
         tmp_dir = mkdtemp()
-        mock_expanduser.return_value = tmp_dir
+        mock_home.return_value = Path(tmp_dir)
         mock_yes_no.return_value = True
         mock_input.return_value = 'fake_user_for_note_copy_tests'
         mock_getpass.side_effect = ['FAKE_API_KEY_FOR_NOTE_COPY_TESTS', 'fake_password']
@@ -295,9 +295,19 @@ class TestChangeTags(TestCase):
 
 class TestIntegration(TestCase):
     @vcr.use_cassette('fixtures/vcr_cassettes/test_copy_notes/test_copy_notes.yaml')
+    @mock.patch('note_copy.note_copy.GelbooruPost.auth', new_callable=mock.PropertyMock)
+    @mock.patch('note_copy.note_copy.DanbooruPost.auth', new_callable=mock.PropertyMock)
     @mock.patch('note_copy.note_copy.time.sleep')
-    def test_copy_notes(self, mock_sleep):
-        # If a new integration test needs to be recorded, unmock sleep request
+    def test_copy_notes(self, mock_sleep, mock_danbooru_auth, mock_gelbooru_auth):
+        mock_danbooru_auth.return_value = {
+            'api_key': 'FAKE_API_KEY_FOR_NOTE_COPY_TESTS',
+            'login': 'fake_user_for_note_copy_tests',
+        }
+        mock_gelbooru_auth = {
+            'user_id': '1648',
+            'pass_hash': '80c1ed9c72b4d7048851a6a6d629ba4abe5e8c76',
+        }
+        # If a new integration test needs to be recorded, unmock sleep and auth calls
         danbooru_post = note_copy.DanbooruPost(284341)
         gelbooru_post = note_copy.GelbooruPost(302693)
         gelbooru_post.copy_notes_from_post(danbooru_post)
