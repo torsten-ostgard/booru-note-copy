@@ -7,7 +7,7 @@ interactions:
       Connection: [keep-alive]
       User-Agent: [python-requests/2.19.0]
     method: GET
-    uri: https://gelbooru.com/index.php?page=dapi&s=post&q=index&id=1904252
+    uri: https://gelbooru.com/index.php?page=dapi&s=post&q=index&id=1904252&user_id=1648&api_key=FAKE_API_KEY_FOR_NOTE_COPY_TESTS
   response:
     body: {string: '<?xml version="1.0" encoding="UTF-8"?><posts count="1" offset="0"><post
         height="1192" score="7" file_url="https://simg3.gelbooru.com/images/24/fb/24fb40064d89da2c9549cd4f3bc2bc77.jpg"
