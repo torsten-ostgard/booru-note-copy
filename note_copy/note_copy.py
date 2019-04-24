@@ -1,6 +1,5 @@
 import inspect
 import json
-import os
 import re
 import sys
 import time
@@ -12,6 +11,7 @@ from urllib.parse import quote
 
 import defusedxml.ElementTree as ET
 import requests
+from bs4 import BeautifulSoup
 from cached_property import cached_property
 
 from .exceptions import NoSupportedSites
@@ -69,9 +69,9 @@ class BooruPost(metaclass=ABCMeta):
     """
     A post on a booru-style imageboard.
     """
-    def __init__(self, post_id, *, auth_dir=None):
+    def __init__(self, post_id, *, is_source=False, auth_dir=None):
         self.post_id = int(post_id)
-        self.post_url = self.post_url.format(post_id=post_id)
+        self.is_source = is_source
         self.auth_dir = auth_dir
 
     def __eq__(self, other):
@@ -102,14 +102,7 @@ class BooruPost(metaclass=ABCMeta):
             return auth
         except FileNotFoundError:
             store = yes_no('Store {0} login information?'.format(self.site_name))
-            username = input('Username: ')
-            auth_string = getpass(self.auth_prompt + ': ')
-
-        if self.uses_cookies:
-            session = self.login(username, auth_string)
-            auth = requests.utils.dict_from_cookiejar(session.cookies)
-        else:
-            auth = {'login': username, 'api_key': auth_string}
+            auth = self.get_auth_from_input()
 
         if store:
             self.auth_dir.mkdir(parents=True, exist_ok=True)
@@ -198,9 +191,15 @@ class DanbooruPost(BooruPost):
     base_url = 'https://' + domain
     post_url = base_url + '/posts/{post_id}.json'
     note_url = base_url + '/notes.json'
-    auth_prompt = 'API key'
     uses_cookies = False
     cooldown = 1
+
+    def get_auth_from_input(self):
+        username = input('Username: ')
+        api_key = input('API key: ')
+        auth = {'login': username, 'api_key': api_key}
+
+        return auth
 
     @cached_property
     def notes(self):
@@ -228,7 +227,8 @@ class DanbooruPost(BooruPost):
         :return: a dictionary of post metadata
         :rtype: dict[str, str]
         """
-        r = requests.get(self.post_url, params=self.auth)
+        post_url = self.post_url.format(post_id=self.post_id)
+        r = requests.get(post_url, params=self.auth)
         return r.json()
 
     @property
@@ -249,7 +249,8 @@ class DanbooruPost(BooruPost):
     def update_tags(self):
         tag_string = change_tags(self.post_info['tag_string'])
         payload = {'post[tag_string]': tag_string}
-        requests.put(self.post_url, data=payload, params=self.auth)
+        post_url = self.post_url.format(post_id=self.post_id)
+        requests.put(post_url, data=payload, params=self.auth)
 
 
 class GelbooruPost(BooruPost):
@@ -258,17 +259,41 @@ class GelbooruPost(BooruPost):
     domain = 'gelbooru.com'
     base_url = 'https://' + domain
     login_url = base_url + '/index.php?page=account&s=login&code=00'
+    api_post_url = base_url + '/index.php?page=dapi&s=post&q=index&id={post_id}'
+    html_post_url = base_url + '/index.php?page=post&s=view&id={post_id}'
     # Not all API calls support JSON and those that do are often incomplete, so just use XML
-    post_url = base_url + '/index.php?page=dapi&s=post&q=index&id={post_id}'
     note_url = base_url + '/index.php?page=dapi&s=note&q=index&post_id={post_id}'
-    auth_prompt = 'Password'
-    uses_cookies = True
     cooldown = 15  # Actual cooldown is 10 seconds, but give it a lot of wiggle room
+    read_auth_keys = {'user_id', 'api_key'}
+    write_auth_keys = {'user_id', 'pass_hash'}
 
-    def login(self, username, password):
+    @property
+    def read_auth(self):
+        filtered_items = {k: v for k, v in self.auth.items() if k in self.read_auth_keys}
+        return filtered_items
+
+    @property
+    def write_auth(self):
+        filtered_items = {k: v for k, v in self.auth.items() if k in self.write_auth_keys}
+        return filtered_items
+
+    def get_auth_from_input(self):
+        username = input('Username: ')
+        password = getpass('Password: ')
+        api_key = input('API key: ')
+
+        session = self._login(username, password)
+        cookies = requests.utils.dict_from_cookiejar(session.cookies)
+        auth = {key: cookies[key] for key in self.write_auth_keys}
+        auth['api_key'] = api_key
+
+        return auth
+
+    def _login(self, username, password):
         session = requests.session()
         payload = {'user': username, 'pass': password, 'submit': 'Log in'}
         session.post(self.login_url, data=payload)
+
         return session
 
     @cached_property
@@ -277,10 +302,39 @@ class GelbooruPost(BooruPost):
         :return: a dictionary of post metadata
         :rtype: dict[str, str|int]
         """
-        r = requests.get(self.post_url, cookies=self.auth)
+        if self.is_source:
+            return self._get_post_info_from_api()
+        else:
+            return self._get_post_info_from_html()
+
+    def _get_post_info_from_api(self):
+        post_url = self.api_post_url.format(post_id=self.post_id)
+        r = requests.get(post_url, params=self.read_auth)
         root = ET.fromstring(r.text)
         d = convert_xml_to_dict(root)
+
         return d['posts'][0]
+
+    def _get_post_info_from_html(self):
+        # Gelbooru's API is read-only, so to create or modify a resource, requests need to act
+        # like a web browser. Part of this process involves using a CSRF token, which is only
+        # provided in the HTML, so scraping the site is the only option.
+        post_url = self.html_post_url.format(post_id=self.post_id)
+        r = requests.get(post_url, cookies=self.write_auth)
+        soup = BeautifulSoup(r.text, 'html.parser')
+        names = ['title', 'source', 'uid', 'uname', 'csrf-token']
+        post_info = {name: soup.find(attrs={'name': name}).attrs['value'] for name in names}
+        rating = soup.find(attrs={'name': 'rating', 'checked': 'checked'}).attrs['value']
+        post_info['rating'] = rating
+        post_info['tags'] = soup.find(attrs={'id': 'tags'}).text
+        # change is the key used in the API response instead of lupdated.
+        post_info['change'] = soup.find(attrs={'name': 'lupdated'}).attrs['value']
+        img_attrs = soup.find('img', attrs={'id': 'image'}).attrs
+        post_info['height'] = int(img_attrs['data-original-height'])
+        post_info['width'] = int(img_attrs['data-original-width'])
+        post_info['PHPSESSID'] = r.cookies['PHPSESSID']
+
+        return post_info
 
     @property
     def dimensions(self):
@@ -290,7 +344,7 @@ class GelbooruPost(BooruPost):
     def notes(self):
         self.note_url = self.note_url.format(post_id=self.post_id)
         notes = []
-        r = requests.get(self.note_url, cookies=self.auth)
+        r = requests.get(self.note_url, params=self.read_auth)
         root = ET.fromstring(r.text)
         d = convert_xml_to_dict(root)
         api_notes = d.get('notes', [])
@@ -318,7 +372,7 @@ class GelbooruPost(BooruPost):
             'note[post_id]': self.post_id,
         }
         url = self.base_url + '/public/note_save.php?id=-2'
-        requests.post(url, data=payload, cookies=self.auth)
+        requests.post(url, data=payload, cookies=self.write_auth)
 
     def update_tags(self):
         rating = self.post_info['rating']
@@ -336,12 +390,16 @@ class GelbooruPost(BooruPost):
             'source': source,
             'tags': tag_string,
             'id': self.post_id,
+            'uid':  self.post_info['uid'],
+            'uname': self.post_info['uname'],
             'pconf': pconf,
             'lupdated': lupdated,
+            'csrf-token': self.post_info['csrf-token'],
             'submit': submit,
         }
         url = self.base_url + '/public/edit_post.php'
-        requests.post(url, data=payload, cookies=self.auth)
+        cookies = {'PHPSESSID': self.post_info['PHPSESSID'], **self.write_auth}
+        requests.post(url, data=payload, cookies=cookies)
 
 
 def get_valid_classes():
@@ -364,7 +422,7 @@ def get_valid_classes():
     return valid_classes
 
 
-def instantiate_post(valid_classes, post_string):
+def instantiate_post(valid_classes, post_string, is_source=False):
     """
     Create a BooruPost object from a string
 
@@ -387,7 +445,7 @@ def instantiate_post(valid_classes, post_string):
 
     for cls in valid_classes:
         if site_identifier.lower() in {cls.short_code, cls.domain}:
-            return cls(post_id)
+            return cls(post_id, is_source=is_source)
 
     raise UnsupportedSite('No supported site found for identifier: ' + site_identifier)
 

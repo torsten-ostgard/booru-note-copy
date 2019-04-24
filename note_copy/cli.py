@@ -17,7 +17,7 @@ def main():
     valid_classes = note_copy.get_valid_classes()
 
     if args.source and args.destination:
-        source = note_copy.instantiate_post(valid_classes, args.source)
+        source = note_copy.instantiate_post(valid_classes, args.source, is_source=True)
         destination = note_copy.instantiate_post(valid_classes, args.destination)
         destination.copy_notes_from_post(source)
     elif args.file:
@@ -31,7 +31,7 @@ def main():
                     continue
 
                 source_id, destination_id = line.split()
-                source = note_copy.instantiate_post(valid_classes, source_id)
+                source = note_copy.instantiate_post(valid_classes, source_id, is_source=True)
                 destination = note_copy.instantiate_post(valid_classes, destination_id)
                 destination.copy_notes_from_post(source)
                 time.sleep(cooldown)
