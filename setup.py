@@ -3,6 +3,7 @@ import setuptools
 import note_copy
 
 requires = [
+    'beautifulsoup4',
     'cached_property',
     'defusedxml',
     'requests',

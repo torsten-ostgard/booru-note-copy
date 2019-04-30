@@ -10,7 +10,7 @@ tox = "*"
 vcrpy = "*"
 
 [packages]
+beautifulsoup4 = "*"
 cached-property = "*"
 defusedxml = "*"
 requests = "*"
-beautifulsoup4 = "*"
