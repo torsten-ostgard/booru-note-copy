@@ -1,0 +1,33 @@
+dist: xenial
+language: python
+python:
+  - "3.5"
+  - "3.6"
+  - "3.7"
+
+install:
+  - pip install pipenv
+  - pipenv install --dev
+
+script:
+  - if [[ $TRAVIS_PYTHON_VERSION == "3.7" ]]; then
+        pipenv run coverage run --source=./ setup.py test;
+    else
+        pipenv run python setup.py test;
+    fi
+
+after_success:
+  # Bash uploader fails when coverage is uploaded conditionally.
+  # See: https://github.com/codecov/codecov-bash/issues/133
+  - if [[ $TRAVIS_PYTHON_VERSION == "3.7" ]]; then
+        pip install codecov && codecov;
+    fi
+
+deploy:
+  provider: pypi
+  user: "torsten-ostgard"
+  password:
+    secure: "CsoKo/5h2JubwVkQwkNHFrVz4OY2bL78IyhyE2G1QFiGQKgb2NDbV5kTBEu7yUtuaW0fYGWjSdXLW6dVdzw3Rg2bC96uzHkpNmiazAZdzaroPZC9/8PkHXGGmVQDLWAAzezOmqMJY6gDtYgGHwXXolwMDg2JxTxr1JXbJ4AGw3PtW1ttn9mwHrb5hDSsiNQWba7mkjztD99uyEae0zmPtWJaCRHpSG0JHioaqEP3aqEqA0uXzvcVKaDJrxEXBZAHIz5eg61pQclU8zUIXH8aJ7ETIi+w5iscTLamCMY8Oj62OWl2JBvp2wBU31VKXlSwYpeQSqVpK8OcXpVDmLgYzeNxjfSUoJfnRAk23HvJOaeFaq6QQuRl4iZLowSdyFOUAOhtbRo7lzSL97uoqqmWCgVWr7Twd5LjA8v+S6hSD91lUjVaeR9QgLGzx3usUhETzxjhZKvw+Z8cq1PxmSljQ8pc0Cy0GQW44TPb05LBwBHvLjq3u6tUt5i57U/rzFcsSd+Fq0PT0O8zFL1ymFGzkQP0ruVbJ/jaWioAbrao7jILlmtAkVYWZEvapoFJdRjtoY39b+eUpoO5G436RcVQPtYJl1iZ3IdRxzjJ8vSu050rk13vxOhSckclzEyfQDN5SK6woWIYqXI2khP0ewkW/HX+n3PpVbzFuBtdj81ZYqs="
+  skip_existing: true
+  on:
+    tags: true
