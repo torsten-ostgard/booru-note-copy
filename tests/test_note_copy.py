@@ -178,7 +178,7 @@ class TestDanbooruPost(TestCase):
 
 class TestGelbooruPost(TestCase):
     def setUp(self):
-        self.post = note_copy.GelbooruPost(1904252, is_source=True)
+        self.post = note_copy.GelbooruPost(1904252)
 
     @vcr.use_cassette('fixtures/vcr_cassettes/test_gelbooru_post/test_auth.yaml')
     @mock.patch('note_copy.note_copy.getpass')
@@ -231,7 +231,7 @@ class TestGelbooruPost(TestCase):
     @mock.patch('note_copy.note_copy.GelbooruPost.auth', new_callable=mock.PropertyMock)
     def test_post_info_property_write(self, mock_auth):
         mock_auth.return_value = GELBOORU_TEST_AUTH
-        post = note_copy.GelbooruPost(1904252)
+        post = note_copy.GelbooruPost(1904252, mode='w')
         result = post.post_info
         # Testing the full result would be cumbersome, so spot check a few key attributes
         self.assertEqual(
@@ -239,6 +239,12 @@ class TestGelbooruPost(TestCase):
             result['csrf-token'],
         )
         self.assertEqual('pbdnlog5di3ki2mr9b1odombh0', result['PHPSESSID'])
+
+    def test_post_info_invalid_mode(self):
+        post = note_copy.GelbooruPost(1904252, mode='rw')
+
+        with self.assertRaises(ValueError):
+            post.post_info
 
     @vcr.use_cassette('fixtures/vcr_cassettes/test_gelbooru_post/test_post_info_property_read.yaml')
     @mock.patch('note_copy.note_copy.GelbooruPost.auth', new_callable=mock.PropertyMock)
@@ -252,7 +258,7 @@ class TestGelbooruPost(TestCase):
     @mock.patch('note_copy.note_copy.GelbooruPost.auth', new_callable=mock.PropertyMock)
     def test_dimensions_write(self, mock_auth):
         mock_auth.return_value = GELBOORU_TEST_AUTH
-        post = note_copy.GelbooruPost(1904252)
+        post = note_copy.GelbooruPost(1904252, mode='w')
         expected_result = (1192, 1064)
         result = post.dimensions
         self.assertEqual(expected_result, result)
@@ -335,7 +341,7 @@ class TestIntegration(TestCase):
         mock_danbooru_auth.return_value = DANBOORU_TEST_AUTH
         mock_gelbooru_auth.return_value = GELBOORU_TEST_AUTH
         # If a new integration test needs to be recorded, unmock sleep and auth calls
-        danbooru_post = note_copy.DanbooruPost(284392, is_source=True)
-        gelbooru_post = note_copy.GelbooruPost(302738)
+        danbooru_post = note_copy.DanbooruPost(284392)
+        gelbooru_post = note_copy.GelbooruPost(302738, mode='w')
         gelbooru_post.copy_notes_from_post(danbooru_post)
         self.assertEqual(set(danbooru_post.notes), set(gelbooru_post.notes))
