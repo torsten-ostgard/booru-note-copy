@@ -69,9 +69,9 @@ class BooruPost(metaclass=ABCMeta):
     """
     A post on a booru-style imageboard.
     """
-    def __init__(self, post_id, *, is_source=False, auth_dir=None):
+    def __init__(self, post_id, *, mode='r', auth_dir=None):
         self.post_id = int(post_id)
-        self.is_source = is_source
+        self.mode = mode
         self.auth_dir = auth_dir
 
     def __eq__(self, other):
@@ -302,10 +302,12 @@ class GelbooruPost(BooruPost):
         :return: a dictionary of post metadata
         :rtype: dict[str, str|int]
         """
-        if self.is_source:
+        if self.mode == 'r':
             return self._get_post_info_from_api()
-        else:
+        elif self.mode == 'w':
             return self._get_post_info_from_html()
+        else:
+            raise ValueError("invalid mode: '{mode}'".format(mode=self.mode))
 
     def _get_post_info_from_api(self):
         post_url = self.api_post_url.format(post_id=self.post_id)
@@ -422,7 +424,7 @@ def get_valid_classes():
     return valid_classes
 
 
-def instantiate_post(valid_classes, post_string, is_source=False):
+def instantiate_post(valid_classes, post_string, mode='r'):
     """
     Create a BooruPost object from a string
 
@@ -445,7 +447,7 @@ def instantiate_post(valid_classes, post_string, is_source=False):
 
     for cls in valid_classes:
         if site_identifier.lower() in {cls.short_code, cls.domain}:
-            return cls(post_id, is_source=is_source)
+            return cls(post_id, mode=mode)
 
     raise UnsupportedSite('No supported site found for identifier: ' + site_identifier)
 
