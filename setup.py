@@ -3,8 +3,8 @@ from pathlib import Path
 
 import note_copy
 
-this_directory = Path(__file__).parent.resolve()
-with open(this_directory/'README.md', 'r') as f:
+readme_file = Path(__file__).parent.resolve()/'README.md'
+with open(str(readme_file), 'r') as f:
     long_description = f.read()
 
 requires = [
