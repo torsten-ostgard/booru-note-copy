@@ -1,6 +1,11 @@
 import setuptools
+from pathlib import Path
 
 import note_copy
+
+this_directory = Path(__file__).parent.resolve()
+with open(this_directory/'README.md', 'r') as f:
+    long_description = f.read()
 
 requires = [
     'beautifulsoup4',
@@ -42,6 +47,8 @@ setuptools.setup(
         'Operating System :: OS Independent',
         'Topic :: Internet',
     ],
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     test_suite='tests',
     tests_require=tests_require,
 )
