@@ -4,13 +4,14 @@ python:
   - "3.5"
   - "3.6"
   - "3.7"
+  - "3.8"
 
 install:
   - pip install pipenv
   - pipenv install --dev
 
 script:
-  - if [[ $TRAVIS_PYTHON_VERSION == "3.7" ]]; then
+  - if [[ $TRAVIS_PYTHON_VERSION == "3.8" ]]; then
         pipenv run coverage run --source=./ setup.py test;
     else
         pipenv run python setup.py test;
@@ -19,7 +20,7 @@ script:
 after_success:
   # Bash uploader fails when coverage is uploaded conditionally.
   # See: https://github.com/codecov/codecov-bash/issues/133
-  - if [[ $TRAVIS_PYTHON_VERSION == "3.7" ]]; then
+  - if [[ $TRAVIS_PYTHON_VERSION == "3.8" ]]; then
         pip install codecov && codecov;
     fi
 
