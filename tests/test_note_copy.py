@@ -123,6 +123,12 @@ class TestBooruPost(TestCase):
 
         shutil.rmtree(tmp_dir)
 
+    def test_str(self):
+        danbooru_post = note_copy.DanbooruPost(1234)
+        gelbooru_post = note_copy.GelbooruPost(1234)
+        self.assertEqual(str(danbooru_post), 'Danbooru Post - 1234')
+        self.assertEqual(str(gelbooru_post), 'Gelbooru Post - 1234')
+
 
 class TestDanbooruPost(TestCase):
     def setUp(self):
