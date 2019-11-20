@@ -149,7 +149,7 @@ class BooruPost(metaclass=ABCMeta):
         """
         raise NotImplementedError
 
-    def copy_notes_from_post(self, source_post, same_size=False):
+    def copy_notes_from_post(self, source_post):
         """
         Write all notes in the source post to this post.
 
@@ -158,14 +158,10 @@ class BooruPost(metaclass=ABCMeta):
 
         :param source_post: the post from which notes will be copied
         :type source_post: BooruPost
-        :param same_size: whether the two images are equal in height and width
-        :type same_size: bool
         """
         copied_notes = []
         for note in source_post.notes:
-            if not same_size:
-                note = scale_note(note, source_post.dimensions, self.dimensions)
-
+            note = scale_note(note, source_post.dimensions, self.dimensions)
             self.write_note(note)
             copied_notes.append(note)
             time.sleep(self.cooldown)
