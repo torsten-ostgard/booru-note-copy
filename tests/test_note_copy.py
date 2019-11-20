@@ -80,7 +80,7 @@ class TestBooruPost(TestCase):
         self.assertNotEqual(danbooru_post, gelbooru_post)
 
     @mock.patch('note_copy.note_copy.getpass')
-    @mock.patch('builtins.input')
+    @mock.patch('note_copy.note_copy.input')
     @mock.patch('note_copy.note_copy.yes_no')
     @mock.patch('note_copy.note_copy.Path.home')
     def test_auth_stores_credentials(self, mock_home, mock_yes_no, mock_input, mock_getpass):
@@ -128,7 +128,7 @@ class TestDanbooruPost(TestCase):
     def setUp(self):
         self.post = note_copy.DanbooruPost(1437880)
 
-    @mock.patch('builtins.input')
+    @mock.patch('note_copy.note_copy.input')
     @mock.patch('note_copy.note_copy.yes_no')
     def test_auth(self, mock_yes_no, mock_input):
         self.post.auth_dir = Path('does_not_exist')
@@ -182,7 +182,7 @@ class TestGelbooruPost(TestCase):
 
     @vcr.use_cassette('fixtures/vcr_cassettes/test_gelbooru_post/test_auth.yaml')
     @mock.patch('note_copy.note_copy.getpass')
-    @mock.patch('builtins.input')
+    @mock.patch('note_copy.note_copy.input')
     @mock.patch('note_copy.note_copy.yes_no')
     def test_auth(self, mock_yes_no, mock_input, mock_getpass):
         self.post.auth_dir = Path('does_not_exist')
