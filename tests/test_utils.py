@@ -7,27 +7,27 @@ from note_copy import utils
 
 
 class TestYesNo(TestCase):
-    @mock.patch('builtins.input')
+    @mock.patch('note_copy.utils.input')
     def test_y(self, mock_input):
         mock_input.return_value = 'y'
         self.assertTrue(utils.yes_no(''))
 
-    @mock.patch('builtins.input')
+    @mock.patch('note_copy.utils.input')
     def test_yes(self, mock_input):
         mock_input.return_value = 'yes'
         self.assertTrue(utils.yes_no(''))
 
-    @mock.patch('builtins.input')
+    @mock.patch('note_copy.utils.input')
     def test_n(self, mock_input):
         mock_input.return_value = 'n'
         self.assertFalse(utils.yes_no(''))
 
-    @mock.patch('builtins.input')
+    @mock.patch('note_copy.utils.input')
     def test_no(self, mock_input):
         mock_input.return_value = 'no'
         self.assertFalse(utils.yes_no(''))
 
-    @mock.patch('builtins.input')
+    @mock.patch('note_copy.utils.input')
     def test_invalid_input(self, mock_input):
         mock_input.side_effect = ['a', 'b', 'y']
         self.assertTrue(utils.yes_no(''))
