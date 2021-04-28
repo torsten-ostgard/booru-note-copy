@@ -1,0 +1,25 @@
+version: 2
+updates:
+- package-ecosystem: pip
+  directory: "/"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: flake8
+    versions:
+    - 3.8.4
+    - 3.9.0
+  - dependency-name: defusedxml
+    versions:
+    - 0.7.0
+  - dependency-name: tox
+    versions:
+    - 3.21.2
+    - 3.21.3
+    - 3.21.4
+    - 3.22.0
+  - dependency-name: coverage
+    versions:
+    - 5.3.1
+    - "5.4"
